@@ -387,7 +387,7 @@ UdpProtocol::OnMsg(UdpMsg *msg, int len)
 }
 
 void
-UdpProtocol::UpdateNetworkStats(void)
+UdpProtocol::UpdateNetworkStats()
 {
    int now = Platform::GetCurrentTimeMS();
 

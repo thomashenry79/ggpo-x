@@ -459,17 +459,16 @@ Peer2PeerBackend::IncrementFrame(uint16_t checksum1)
 
 
 void
-Peer2PeerBackend::PollSyncEvents(void)
+Peer2PeerBackend::PollSyncEvents()
 {
    Sync::Event e;
    while (_sync.GetEvent(e)) {
       OnSyncEvent(e);
    }
-   return;
 }
 
 void
-Peer2PeerBackend::PollUdpProtocolEvents(void)
+Peer2PeerBackend::PollUdpProtocolEvents()
 {
    UdpProtocol::Event evt;
    for (int i = 0; i < _num_players; i++) {
@@ -718,10 +717,9 @@ Peer2PeerBackend::SetFrameDelay(GGPOPlayerHandle player, int delay)
    for (int i = 0; i < _num_players; i++) {
        if (_endpoints[i].IsInitialized()) {
            _endpoints[i].SetFrameDelay(delay);
-          
        }
    }
-   ;
+
    return GGPO_OK; 
 }
 

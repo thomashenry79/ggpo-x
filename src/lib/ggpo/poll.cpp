@@ -8,7 +8,7 @@
 #include "types.h"
 #include "poll.h"
 
-Poll::Poll(void) :
+Poll::Poll() :
    _start_time(0)
 {
 }

@@ -53,7 +53,7 @@ public:
 
     void CheckSimulation();
     void AdjustSimulation(int seek_to);
-    void IncrementFrame(void);
+    void IncrementFrame();
 
     int GetFrameCount() { return _framecount; }
     bool InRollback() { return _rollingback; }

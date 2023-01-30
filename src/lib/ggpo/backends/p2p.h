@@ -42,9 +42,9 @@ protected:
    GGPOPlayerHandle QueueToPlayerHandle(int queue) { return (GGPOPlayerHandle)(queue + 1); }
    GGPOPlayerHandle QueueToSpectatorHandle(int queue) { return (GGPOPlayerHandle)(queue + 1000); } /* out of range of the player array, basically */
    void DisconnectPlayerQueue(int queue, int syncto);
-   void PollSyncEvents(void);
-   void PollUdpProtocolEvents(void);
-   void CheckInitialSync(void);
+   void PollSyncEvents();
+   void PollUdpProtocolEvents();
+   void CheckInitialSync();
    int Poll2Players(int current_frame);
    int PollNPlayers(int current_frame);
    void AddRemotePlayer(char *remoteip, uint16 reportport, int queue);

@@ -134,7 +134,7 @@ Sync::CheckSimulation()
 }
 
 void
-Sync::IncrementFrame(void)
+Sync::IncrementFrame()
 {
    _framecount++;
    SaveCurrentFrame();

@@ -43,7 +43,7 @@ Udp::Udp() :
 {
 }
 
-Udp::~Udp(void)
+Udp::~Udp()
 {
    if (_socket != INVALID_SOCKET) {
       closesocket(_socket);

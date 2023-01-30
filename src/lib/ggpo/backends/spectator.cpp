@@ -103,7 +103,7 @@ SpectatorBackend::IncrementFrame(uint16_t checksum)
 }
 
 void
-SpectatorBackend::PollUdpProtocolEvents(void)
+SpectatorBackend::PollUdpProtocolEvents()
 {
    UdpProtocol::Event evt;
    while (_host.GetEvent(evt)) {

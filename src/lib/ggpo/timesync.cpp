@@ -55,7 +55,7 @@ float TimeSync::LocalAdvantage() const
 float TimeSync::RemoteAdvantage() const
 {
     int i;
-    float advantage = 0;;
+    float advantage = 0;
     for (i = 0; i < ARRAY_SIZE(_local); i++) {
         advantage += _remote[i];
     }

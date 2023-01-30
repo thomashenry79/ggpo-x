@@ -42,8 +42,8 @@ public:
    virtual void OnMsg(sockaddr_in &from, UdpMsg *msg, int len);
 
 protected:
-   void PollUdpProtocolEvents(void);
-   void CheckInitialSync(void);
+   void PollUdpProtocolEvents();
+   void CheckInitialSync();
 
    void OnUdpProtocolEvent(UdpProtocol::Event &e);
 

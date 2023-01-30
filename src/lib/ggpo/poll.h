@@ -23,7 +23,7 @@ public:
 
 class Poll {
 public:
-   Poll(void);
+   Poll();
    void RegisterLoop(IPollSink *sink, void *cookie = NULL);
 
    void Run();

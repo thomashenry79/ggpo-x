@@ -112,9 +112,9 @@ protected:
       QueueEntry(int time, sockaddr_in &dst, UdpMsg *m) : queue_time(time), dest_addr(dst), msg(m) { }
    };
 
-   void UpdateNetworkStats(void);
+   void UpdateNetworkStats();
    void QueueEvent(const UdpProtocol::Event &evt);
-   void ClearSendQueue(void);
+   void ClearSendQueue();
    void Log(const char *fmt, ...);
    void LogMsg(const char *prefix, UdpMsg *msg);
    void LogEvent(const char *prefix, const UdpProtocol::Event &evt);

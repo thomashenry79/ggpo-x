@@ -45,7 +45,7 @@ public:
    bool OnLoopPoll(void *cookie) override;
 
 public:
-   ~Udp(void);
+   ~Udp();
 
 protected:
    // Network transmission information
