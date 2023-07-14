@@ -22,7 +22,14 @@ public:  // types
 
 public:  // functions
    static ProcessID GetProcessID() { return GetCurrentProcessId(); }
-   static void AssertFailed(char* msg) { MessageBoxA(NULL, msg, "GGPO Assertion Failed", MB_OK | MB_ICONEXCLAMATION); }
+   static void AssertFailed(char* msg) { 
+#ifdef _UWP_
+	   throw std::exception(msg);// , "GGPO Assertion Failed", MB_OK | MB_ICONEXCLAMATION);
+#else
+
+	   MessageBoxA(NULL, msg, "GGPO Assertion Failed", MB_OK | MB_ICONEXCLAMATION);
+#endif
+   }
    static uint32 GetCurrentTimeMS() {
 
 	   static auto startTime  = high_resolution_clock::now();
