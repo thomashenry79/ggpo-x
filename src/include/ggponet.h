@@ -75,8 +75,8 @@ typedef struct GGPOPlayer {
    GGPOPlayerType    type;
    int               player_num;
    union {
-      struct {
-      } local;
+      /*struct {
+      } local;*/
       struct {
          char           ip_address[32];
          unsigned short port;

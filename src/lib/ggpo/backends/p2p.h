@@ -35,7 +35,7 @@ public:
    virtual GGPOErrorCode Chat(const char* text) override;
    virtual GGPOErrorCode CurrentFrame(int& current) override;
 public:
-   virtual void OnMsg(sockaddr_in &from, UdpMsg *msg, int len);
+   virtual void OnMsg(sockaddr_in &from, UdpMsg *msg, int len) override;
 
 protected:
    GGPOErrorCode PlayerHandleToQueue(GGPOPlayerHandle player, int *queue);
@@ -49,7 +49,7 @@ protected:
    int PollNPlayers(int current_frame);
    void AddRemotePlayer(char *remoteip, uint16 reportport, int queue);
    GGPOErrorCode AddSpectator(char *remoteip, uint16 reportport);
-   virtual void OnSyncEvent(Sync::Event &e) { }
+   virtual void OnSyncEvent(Sync::Event &) { }
    virtual void OnUdpProtocolEvent(UdpProtocol::Event &e, GGPOPlayerHandle handle);
    virtual void OnUdpProtocolPeerEvent(UdpProtocol::Event &e, int queue);
    virtual void OnUdpProtocolSpectatorEvent(UdpProtocol::Event &e, int queue);

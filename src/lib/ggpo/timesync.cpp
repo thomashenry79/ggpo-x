@@ -41,7 +41,7 @@ TimeSync::advance_frame(GameInput &input, float advantage, float radvantage)
 }
 float TimeSync::LocalAdvantage() const
 {
-    int i ;
+    size_t i ;
     float advantage=0;
     for (i = 0; i < ARRAY_SIZE(_local); i++) {
         advantage += _local[i];
@@ -52,7 +52,7 @@ float TimeSync::LocalAdvantage() const
 
 float TimeSync::RemoteAdvantage() const
 {
-    int i;
+    size_t i;
     float advantage = 0;;
     for (i = 0; i < ARRAY_SIZE(_local); i++) {
         advantage += _remote[i];
@@ -61,7 +61,7 @@ float TimeSync::RemoteAdvantage() const
     return (advantage);
 }
 float
-TimeSync::recommend_frame_wait_duration(bool require_idle_input)
+TimeSync::recommend_frame_wait_duration(bool )
 {
    
    auto advantage = LocalAdvantage();

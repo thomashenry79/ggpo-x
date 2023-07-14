@@ -8,7 +8,7 @@
 #include "platform_windows.h"
 
 int
-Platform::GetConfigInt(const char* name)
+Platform::GetConfigInt(const char* )
 {
     return 0;
   /* char buf[1024];
@@ -18,7 +18,7 @@ Platform::GetConfigInt(const char* name)
    return atoi(buf);*/
 }
 
-bool Platform::GetConfigBool(const char* name)
+bool Platform::GetConfigBool(const char* )
 {
     return false;
    //char buf[1024];

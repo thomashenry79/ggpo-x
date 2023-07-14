@@ -41,7 +41,7 @@ Poll::Run()
 }
 
 bool
-Poll::Pump(int timeout)
+Poll::Pump(int )
 {
    int i;
    bool finished = false;

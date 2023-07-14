@@ -23,9 +23,9 @@ class Sync {
 public:
     struct Config {
         GGPOSessionCallbacks    callbacks;
-        int                     num_prediction_frames;
-        int                     num_players;
-        int                     input_size;
+        int                     num_prediction_frames=0;
+        int                     num_players=0;
+        int                     input_size=0;
     };
     struct Event {
         enum {

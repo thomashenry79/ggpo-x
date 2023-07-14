@@ -79,7 +79,7 @@ Udp::SendTo(char *buffer, int len, int flags, struct sockaddr *dst, int destlen)
 }
 
 bool
-Udp::OnLoopPoll(void *cookie)
+Udp::OnLoopPoll(void *)
 {
    uint8          recv_buf[MAX_UDP_PACKET_SIZE];
    sockaddr_in    recv_addr;

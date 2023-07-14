@@ -26,7 +26,7 @@ SyncTestBackend::SyncTestBackend(GGPOSessionCallbacks *cb,
    /*
     * Initialize the synchronziation layer
     */
-   Sync::Config config = { 0 };
+   Sync::Config config = { {nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr},0 };
    config.callbacks = _callbacks;
    config.num_prediction_frames = MAX_PREDICTION_FRAMES;
    _sync.Init(config);
@@ -106,9 +106,8 @@ GGPOErrorCode SyncTestBackend::CurrentFrame(int& current)
 }
 
 GGPOErrorCode
-SyncTestBackend::IncrementFrame(uint16_t cs)
+SyncTestBackend::IncrementFrame(uint16_t )
 {
-    cs;
    _sync.IncrementFrame();
    _current_input.erase();
    
@@ -180,7 +179,7 @@ SyncTestBackend::RaiseSyncError(const char *fmt, ...)
 }
 
 GGPOErrorCode
-SyncTestBackend::Logv(char *fmt, va_list list)
+SyncTestBackend::Logv(const char *fmt, va_list list)
 {
    if (_logfp) {
       vfprintf(_logfp, fmt, list);

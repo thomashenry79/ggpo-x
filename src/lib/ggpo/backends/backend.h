@@ -22,12 +22,12 @@ public:
    virtual GGPOErrorCode CurrentFrame(int& current) =0;
    virtual GGPOErrorCode Chat(const char* text) = 0;// { return GGPO_OK; }
    virtual GGPOErrorCode DisconnectPlayer(GGPOPlayerHandle handle) = 0;// { return GGPO_OK; }
-   virtual GGPOErrorCode GetNetworkStats(GGPONetworkStats *stats, GGPOPlayerHandle handle) { return GGPO_OK; }
+   virtual GGPOErrorCode GetNetworkStats(GGPONetworkStats *, GGPOPlayerHandle ) { return GGPO_OK; }
    virtual GGPOErrorCode Logv(const char *fmt, va_list list) { ::Logv(fmt, list); return GGPO_OK; }
 
-   virtual GGPOErrorCode SetFrameDelay(GGPOPlayerHandle player, int delay) { return GGPO_ERRORCODE_UNSUPPORTED; }
-   virtual GGPOErrorCode SetDisconnectTimeout(int timeout) { return GGPO_ERRORCODE_UNSUPPORTED; }
-   virtual GGPOErrorCode SetDisconnectNotifyStart(int timeout) { return GGPO_ERRORCODE_UNSUPPORTED; }
+   virtual GGPOErrorCode SetFrameDelay(GGPOPlayerHandle , int ) { return GGPO_ERRORCODE_UNSUPPORTED; }
+   virtual GGPOErrorCode SetDisconnectTimeout(int ) { return GGPO_ERRORCODE_UNSUPPORTED; }
+   virtual GGPOErrorCode SetDisconnectNotifyStart(int ) { return GGPO_ERRORCODE_UNSUPPORTED; }
 };
 
 

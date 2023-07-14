@@ -18,9 +18,7 @@
 #define GAMEINPUT_MAX_PLAYERS    6
 
 struct GameInput {
-   enum Constants {
-      NullFrame = -1
-   };
+	static const int NullFrame = -1;
    int      frame;
    int      size; /* size in bytes of the entire input for all players */
    char     bits[GAMEINPUT_MAX_BYTES * GAMEINPUT_MAX_PLAYERS];

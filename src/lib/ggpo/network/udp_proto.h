@@ -33,7 +33,7 @@ public:
    };
 
    struct Event {
-      enum Type {
+      enum class Type {
          Unknown = -1,
          Connected,
          Synchronizing,
@@ -58,7 +58,7 @@ public:
          } network_interrupted;
       } u;
 
-      UdpProtocol::Event(Type t = Unknown) : type(t) { }
+      Event(Event::Type t = Event::Type::Unknown) : type(t) { };
    };
 
 public:
@@ -136,12 +136,12 @@ protected:
    /*
     * Network transmission information
     */
-   Udp            *_udp;
+   Udp            *_udp= nullptr;
    sockaddr_in    _peer_addr; 
-   uint16         _magic_number;
-   int            _queue;
-   uint16         _remote_magic_number;
-   bool           _connected;
+   uint16         _magic_number=0;
+   int            _queue=-1;
+   uint16         _remote_magic_number=0;
+   bool           _connected=false;
    int            _send_latency;
    int            _oop_percent;
    struct {
@@ -155,10 +155,10 @@ protected:
     * Stats
     */
    int            _round_trip_time = 0;
-   int            _packets_sent;
-   int            _bytes_sent;
-   int            _kbps_sent;
-   int            _stats_start_time;
+   int            _packets_sent=0;
+   int            _bytes_sent=0;
+   int            _kbps_sent=0;
+   int            _stats_start_time=0;
 
    /*
     * The state machine
@@ -182,8 +182,8 @@ protected:
    /*
     * Fairness.
     */
-   float               _local_frame_advantage;
-   float               _remote_frame_advantage;
+   float               _local_frame_advantage=0;
+   float               _remote_frame_advantage=0;
 
    /*
     * Packet loss...
@@ -192,16 +192,16 @@ protected:
    GameInput                  _last_received_input;
    GameInput                  _last_sent_input;
    GameInput                  _last_acked_input;
-   unsigned int               _last_send_time;
-   unsigned int               _last_recv_time;
-   unsigned int               _shutdown_timeout;
-   unsigned int               _disconnect_event_sent;
-   unsigned int               _disconnect_timeout;
-   unsigned int               _disconnect_notify_start;
-   bool                       _disconnect_notify_sent;
+   unsigned int               _last_send_time=0;
+   unsigned int               _last_recv_time=0;
+   unsigned int               _shutdown_timeout=0;
+   unsigned int               _disconnect_event_sent=0;
+   unsigned int               _disconnect_timeout=0;
+   unsigned int               _disconnect_notify_start=0;
+   bool                       _disconnect_notify_sent=false;
 
-   uint16                     _next_send_seq;
-   uint16                     _next_recv_seq;
+   uint16                     _next_send_seq=0;
+   uint16                     _next_recv_seq=0;
 
    /*
     * Rift synchronization.

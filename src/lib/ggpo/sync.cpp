@@ -8,9 +8,10 @@
 #include "sync.h"
 
 Sync::Sync(UdpMsg::connect_status *connect_status, int maxPrediction) :
- _local_connect_status(connect_status),
- _input_queues(NULL),
- _savedstate(maxPrediction)
+   _savedstate(maxPrediction),
+    _input_queues(NULL),    
+  _local_connect_status(connect_status)
+
 {
    _framecount = 0;
    _last_confirmed_frame = -1;
@@ -23,7 +24,7 @@ Sync::~Sync()
     * Delete frames manually here rather than in a destructor of the SavedFrame
     * structure so we can efficently copy frames via weak references.
     */
-   for (int i = 0; i < _savedstate.frames.size(); i++) {
+   for (size_t i = 0; i < _savedstate.frames.size(); i++) {
       _callbacks.free_buffer(_callbacks.context, _savedstate.frames[i].buf);
    }
    delete [] _input_queues;

@@ -12,7 +12,7 @@
 #include "ggponet.h"
 
 BOOL WINAPI
-DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+DllMain(HINSTANCE , DWORD , LPVOID )
 {
    srand(Platform::GetCurrentTimeMS() + Platform::GetProcessID());
    return TRUE;
@@ -71,7 +71,7 @@ ggpo_start_synctest(GGPOSession **ggpo,
                     GGPOSessionCallbacks *cb,
                     char *game,
                     int num_players,
-                    int input_size,
+                    int ,
                     int frames)
 {
    *ggpo = new SyncTestBackend(cb, game, frames, num_players);
