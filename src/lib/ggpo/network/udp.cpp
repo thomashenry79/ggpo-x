@@ -56,8 +56,7 @@ Udp::Init(uint16 port, Poll *poll, Callbacks *callbacks)
 {
    _callbacks = callbacks;
 
-   _poll = poll;
-   _poll->RegisterLoop(this);
+   poll->RegisterLoop(this);
 
    Log("binding udp socket to port %d.\n", port);
    _socket = CreateSocket(port, 0);
@@ -79,7 +78,7 @@ Udp::SendTo(char *buffer, int len, int flags, struct sockaddr *dst, int destlen)
 }
 
 bool
-Udp::OnLoopPoll(void *)
+Udp::OnLoopPoll()
 {
    uint8          recv_buf[MAX_UDP_PACKET_SIZE];
    sockaddr_in    recv_addr;

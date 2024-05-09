@@ -41,7 +41,7 @@ public:
    
    void SendTo(char *buffer, int len, int flags, struct sockaddr *dst, int destlen);
 
-   bool OnLoopPoll(void *cookie) override;
+   bool OnLoopPoll() override;
 
 public:
    ~Udp(void);
@@ -52,9 +52,6 @@ protected:
 
    // state management
    Callbacks      *_callbacks;
-   Poll           *_poll;
-
-
 };
 
 #endif

@@ -49,7 +49,7 @@ SpectatorBackend::~SpectatorBackend()
 GGPOErrorCode
 SpectatorBackend::DoPoll()
 {
-   _poll.Pump(0);
+   _poll.Pump();
 
    PollUdpProtocolEvents();
    return GGPO_OK;

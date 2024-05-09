@@ -170,7 +170,7 @@ Peer2PeerBackend::DoPoll()
     }
 
    if (!_sync.InRollback()) {
-      _poll.Pump(0);
+      _poll.Pump();
 
       PollUdpProtocolEvents();
       CheckDesync();

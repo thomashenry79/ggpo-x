@@ -197,7 +197,7 @@ void UdpProtocol::SendChat(const char* message)
 }
 
 bool
-UdpProtocol::OnLoopPoll(void *)
+UdpProtocol::OnLoopPoll()
 {
    if (!_udp) {
       return true;
@@ -763,37 +763,14 @@ UdpProtocol::PumpSendQueue()
    while (!_send_queue.empty()) {
       QueueEntry &entry = _send_queue.front();
 
-      if (_send_latency) {
-         // should really come up with a gaussian distributation based on the configured
-         // value, but this will do for now.
-         int jitter = (_send_latency * 2 / 3) + ((rand() % _send_latency) / 3);
-         if ((int)Platform::GetCurrentTimeMS() < _send_queue.front().queue_time + jitter) {
-            break;
-         }
-      }
-      if (_oop_percent && !_oo_packet.msg && ((rand() % 100) < _oop_percent)) {
-         int delay = rand() % (_send_latency * 10 + 1000);
-         Log("creating rogue oop (seq: %d  delay: %d)\n", entry.msg->hdr.sequence_number, delay);
-         _oo_packet.send_time = Platform::GetCurrentTimeMS() + delay;
-         _oo_packet.msg = entry.msg;
-         _oo_packet.dest_addr = entry.dest_addr;
-      } else {
-         ASSERT(entry.dest_addr.sin_addr.s_addr);
+     
+      ASSERT(entry.dest_addr.sin_addr.s_addr);
 
-         _udp->SendTo((char *)entry.msg, entry.msg->PacketSize(), 0,
+      _udp->SendTo((char *)entry.msg, entry.msg->PacketSize(), 0,
                       (struct sockaddr *)&entry.dest_addr, sizeof entry.dest_addr);
-
-         delete entry.msg;
-      }
+      delete entry.msg;
+      
       _send_queue.pop();
-   }
-   if (_oo_packet.msg && _oo_packet.send_time < (int)Platform::GetCurrentTimeMS()) {
-      Log("sending rogue oop!");
-      _udp->SendTo((char *)_oo_packet.msg, _oo_packet.msg->PacketSize(), 0,
-                     (struct sockaddr *)&_oo_packet.dest_addr, sizeof _oo_packet.dest_addr);
-
-      delete _oo_packet.msg;
-      _oo_packet.msg = NULL;
    }
 }
 
