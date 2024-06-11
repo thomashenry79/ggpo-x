@@ -7,7 +7,7 @@
 
 #include "types.h"
 #include "udp.h"
-
+#include <string>
 SOCKET
 CreateSocket(uint16 bind_port, int retries)
 {
@@ -70,8 +70,9 @@ Udp::SendTo(char *buffer, int len, int flags, struct sockaddr *dst, int destlen)
    int res = sendto(_socket, buffer, len, flags, dst, destlen);
    if (res == SOCKET_ERROR) {
       DWORD err = WSAGetLastError();
+      std::string errorMessage = "unknown error in sendto (erro :" + std::to_string(res)  +" wsaerr: " + std::to_string(err) + ").\n";
       Log("unknown error in sendto (erro: %d  wsaerr: %d).\n", res, err);
-      ASSERT(FALSE && "Unknown error in sendto");
+      ASSERT(FALSE && errorMessage.c_str());
    }
    char dst_ip[1024];
    Log("sent packet length %d to %s:%d (ret:%d).\n", len, inet_ntop(AF_INET, (void *)&to->sin_addr, dst_ip, ARRAY_SIZE(dst_ip)), ntohs(to->sin_port), res);

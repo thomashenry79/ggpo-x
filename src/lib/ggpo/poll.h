@@ -10,15 +10,12 @@
 
 #include "static_buffer.h"
 
-#define MAX_POLLABLE_HANDLES     64
 
 
 class IPollSink {
 public:
    virtual ~IPollSink() { }
-   //virtual bool OnMsgPoll(void*) = 0;//{ return true; }
-  // virtual bool OnPeriodicPoll(void*, int) = 0;// { return true; }
-   virtual bool OnLoopPoll() = 0;// { return true; }
+   virtual bool OnLoopPoll() = 0;
 };
 
 class Poll {
