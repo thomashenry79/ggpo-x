@@ -36,7 +36,7 @@ Peer2PeerBackend::Peer2PeerBackend(GGPOSessionCallbacks *cb,
    /*
     * Initialize the synchronziation layer
     */
-   Sync::Config config = { {nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr},0 };
+   Sync::Config config;
    config.num_players = num_players;
    config.input_size = input_size;
    config.callbacks = _callbacks;

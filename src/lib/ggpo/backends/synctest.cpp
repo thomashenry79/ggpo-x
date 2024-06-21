@@ -26,7 +26,7 @@ SyncTestBackend::SyncTestBackend(GGPOSessionCallbacks *cb,
    /*
     * Initialize the synchronziation layer
     */
-   Sync::Config config = { {nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr,nullptr},0 };
+   Sync::Config config;
    config.callbacks = _callbacks;
    config.num_prediction_frames = MAX_PREDICTION_FRAMES;
    _sync.Init(config);
