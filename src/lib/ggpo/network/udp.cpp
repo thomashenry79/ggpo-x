@@ -69,10 +69,14 @@ Udp::SendTo(char *buffer, int len, int flags, struct sockaddr *dst, int destlen)
 
    int res = sendto(_socket, buffer, len, flags, dst, destlen);
    if (res == SOCKET_ERROR) {
-      DWORD err = WSAGetLastError();
-      std::string errorMessage = "Error in sendto (erro :" + std::to_string(res)  +" wsaerr: " + std::to_string(err) + ").\n";
-      Log("unknown error in sendto (erro: %d  wsaerr: %d).\n", res, err);
-      ASSERT(FALSE && errorMessage.c_str());
+        DWORD err = WSAGetLastError();
+       std::string errorMessage = "Error in sendto (erro :" + std::to_string(res)  +" wsaerr: " + std::to_string(err) + ").\n";
+       Log("unknown error in sendto (erro: %d  wsaerr: %d).\n", res, err);
+
+      char assert_buf[1024];
+      snprintf(assert_buf, sizeof(assert_buf) - 1, "Assertion: %s @ %s:%d (pid:%d)", errorMessage.c_str(), __FILE__, __LINE__, (int)Platform::GetProcessID());                       \
+      Platform::AssertFailed(assert_buf);
+      exit(0); 
    }
    char dst_ip[1024];
    Log("sent packet length %d to %s:%d (ret:%d).\n", len, inet_ntop(AF_INET, (void *)&to->sin_addr, dst_ip, ARRAY_SIZE(dst_ip)), ntohs(to->sin_port), res);

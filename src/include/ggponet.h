@@ -207,7 +207,7 @@ typedef struct {
  * your application must implement.  GGPO.net will periodically call these
  * functions during the game.  All callback functions must be implemented.
  */
-typedef struct {
+struct GGPOSessionCallbacks {
    /*
     * begin_game callback - This callback has been deprecated.  You must
     * implement it, but should ignore the 'game' parameter.
@@ -265,7 +265,7 @@ typedef struct {
    * Calling context
    */
    void* context=nullptr;
-} GGPOSessionCallbacks;
+} ;
 
 /*
  * The GGPONetworkStats function contains some statistics about the current
