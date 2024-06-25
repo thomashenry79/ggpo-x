@@ -115,6 +115,12 @@ vw_on_event_callback(void*, GGPOEvent *info)
          ngs.desyncFrame = info->u.desync.nFrameOfDesync;
        break;
    }
+   
+   case GGPO_EVENTCODE_NETWORK_ERROR:
+   {     
+       ngs._networkErrorCount++;
+       break;
+   }
    case GGPO_EVENTCODE_TIMESYNC:
       
        ngs.totalFrameDelays += info->u.timesync.frames_ahead;
@@ -255,7 +261,7 @@ VectorWar_Init(HWND hwnd, unsigned short localport, int num_players, GGPOPlayer 
    ngs.num_players = num_players;
    ngs.loopTimer.Init(60,30);// 60FPS;
    // Fill in a ggpo callbacks structure to pass to start_session.
-   GGPOSessionCallbacks cb = { 0 };
+   GGPOSessionCallbacks cb;
    cb.begin_game      = vw_begin_game_callback;
    cb.advance_frame	 = vw_advance_frame_callback;
    cb.load_game_state = vw_load_game_state_callback;
@@ -318,7 +324,7 @@ VectorWar_InitSpectator(HWND hwnd, unsigned short localport, int num_players, ch
    ngs.num_players = num_players;
 
    // Fill in a ggpo callbacks structure to pass to start_session.
-   GGPOSessionCallbacks cb = { 0 };
+   GGPOSessionCallbacks cb;
    cb.begin_game      = vw_begin_game_callback;
    cb.advance_frame	  = vw_advance_frame_callback;
    cb.load_game_state = vw_load_game_state_callback;
@@ -464,7 +470,7 @@ VectorWar_RunFrame(HWND hwnd, int&playerNum, int & extraUS)
   if (ngs.local_player_handle != GGPO_INVALID_HANDLE) {
       static int nc = 0;
       int input = nc++ % 2 == 0 ? INPUT_ROTATE_LEFT : INPUT_ROTATE_RIGHT;
-   //   input = ReadInputs(hwnd);
+      //  int input = ReadInputs(hwnd);
       if (input == INPUT_FIRE)
           ggpo_client_chat(ggpo, "You wanker!");
 #if defined(SYNC_TEST)

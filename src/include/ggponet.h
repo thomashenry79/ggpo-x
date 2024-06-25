@@ -154,7 +154,9 @@ typedef enum {
    GGPO_EVENTCODE_CONNECTION_INTERRUPTED       = 1006,
    GGPO_EVENTCODE_CONNECTION_RESUMED           = 1007,
    GGPO_EVENTCODE_CHAT                         = 1008,
-   GGPO_EVENTCODE_DESYNC                       = 1009
+   GGPO_EVENTCODE_DESYNC                       = 1009,
+   GGPO_EVENTCODE_NETWORK_ERROR                = 1010
+
 } GGPOEventCode;
 
 /*
@@ -199,6 +201,9 @@ typedef struct {
           uint16_t ourCheckSum;
           uint16_t remoteChecksum;
       } desync;
+      struct {
+          int errorCode;
+      } network_error;
    } u;
 } GGPOEvent;
 

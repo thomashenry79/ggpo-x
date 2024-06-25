@@ -103,7 +103,7 @@ UdpProtocol::SendInput(GameInput &input)
 void
 UdpProtocol::SendPendingOutput()
 {
-   UdpMsg *msg = new UdpMsg(UdpMsg::Input);
+   auto msg = std::make_unique<UdpMsg>(UdpMsg::Input);
    int i, j, offset = 0;
    uint8 *bits;
    GameInput last;
@@ -149,15 +149,15 @@ UdpProtocol::SendPendingOutput()
 
    ASSERT(offset < MAX_COMPRESSED_BITS);
 
-   SendMsg(msg);
+   SendMsg(std::move(msg));
 }
 
 void
 UdpProtocol::SendInputAck()
 {
-   UdpMsg *msg = new UdpMsg(UdpMsg::InputAck);
+   auto msg = std::make_unique<UdpMsg>(UdpMsg::InputAck);
    msg->u.input_ack.ack_frame = _last_received_input.frame;
-   SendMsg(msg);
+   SendMsg(std::move(msg));
 }
 
 bool
@@ -191,9 +191,9 @@ void UdpProtocol::EndPollLoop()
 }
 void UdpProtocol::SendChat(const char* message)
 {
-    UdpMsg* msg = new UdpMsg(UdpMsg::Chat);    
+    auto msg = std::make_unique<UdpMsg>(UdpMsg::Chat);
     strcpy_s<MAX_CHAT_LENGTH>(msg->u.chat.msg, message);
-    SendMsg(msg);
+    SendMsg(std::move(msg));
 }
 
 bool
@@ -225,12 +225,13 @@ UdpProtocol::OnLoopPoll()
       }
 
       if (!_state.running.last_quality_report_time || _state.running.last_quality_report_time + QUALITY_REPORT_INTERVAL < now) {
-         UdpMsg *msg = new UdpMsg(UdpMsg::QualityReport);
+          auto msg = std::make_unique<UdpMsg>(UdpMsg::QualityReport);
+       
          msg->u.quality_report.ping = Platform::GetCurrentTimeMS();
          // encode frame advantage into a byte by multiplying the float by 10, and croppeing to 255 - any frame advantage
          // of 25 or more means catastrophe has already befallen us.
          msg->u.quality_report.frame_advantage = (uint8)min(255.0f,(_timesync.LocalAdvantage()*10.f));
-         SendMsg(msg);
+         SendMsg(std::move(msg));
          _state.running.last_quality_report_time = now;
       }
 
@@ -241,7 +242,7 @@ UdpProtocol::OnLoopPoll()
 
       if (_last_send_time && _last_send_time + KEEP_ALIVE_INTERVAL < now) {
          Log("Sending keep alive packet\n");
-         SendMsg(new UdpMsg(UdpMsg::KeepAlive));
+         SendMsg(std::make_unique<UdpMsg>(UdpMsg::KeepAlive));
       }
 
       if (_disconnect_timeout && _disconnect_notify_start && 
@@ -288,16 +289,16 @@ void
 UdpProtocol::SendSyncRequest()
 {
    _state.sync.random = rand() & 0xFFFF;
-   UdpMsg *msg = new UdpMsg(UdpMsg::SyncRequest);
+   auto msg = std::make_unique<UdpMsg>(UdpMsg::SyncRequest);
    msg->u.sync_request.random_request = _state.sync.random;
    msg->u.sync_request.remote_inputDelay = (uint8_t)_timesync._frameDelay2;
-   SendMsg(msg);
+   SendMsg(std::move(msg));
 }
 
 void
-UdpProtocol::SendMsg(UdpMsg *msg)
+UdpProtocol::SendMsg(std::unique_ptr<UdpMsg>&& msg)
 {
-   LogMsg("send", msg);
+   LogMsg("send", msg.get());
 
    _packets_sent++;
    _last_send_time = Platform::GetCurrentTimeMS();
@@ -306,7 +307,7 @@ UdpProtocol::SendMsg(UdpMsg *msg)
    msg->hdr.magic = _magic_number;
    msg->hdr.sequence_number = _next_send_seq++;
 
-   _send_queue.push(QueueEntry(Platform::GetCurrentTimeMS(), _peer_addr, msg));
+   _send_queue.push(QueueEntry(Platform::GetCurrentTimeMS(), _peer_addr, std::move(msg)));
    PumpSendQueue();
 }
 
@@ -500,11 +501,11 @@ UdpProtocol::OnSyncRequest(UdpMsg *msg, int )
            msg->hdr.magic, _remote_magic_number);
       return false;
    }
-   UdpMsg *reply = new UdpMsg(UdpMsg::SyncReply);
+   auto reply = std::make_unique<UdpMsg>(UdpMsg::SyncReply);
    reply->u.sync_reply.random_reply = msg->u.sync_request.random_request;
    _timesync._remoteFrameDelay = msg->u.sync_request.remote_inputDelay;
    
-   SendMsg(reply);
+   SendMsg(std::move(reply));
    return true;
 }
 
@@ -671,10 +672,10 @@ UdpProtocol::OnInputAck(UdpMsg *msg, int )
 bool
 UdpProtocol::OnQualityReport(UdpMsg *msg, int )
 {
-   // send a reply so the other side can compute the round trip transmit time.
-   UdpMsg *reply = new UdpMsg(UdpMsg::QualityReply);
+   // send a reply so the other side can compute the round trip transmit time.   
+   auto reply = std::make_unique<UdpMsg>(UdpMsg::QualityReply);
    reply->u.quality_reply.pong = msg->u.quality_report.ping;
-   SendMsg(reply);
+   SendMsg(std::move(reply));
 
    _remote_frame_advantage = (float)(msg->u.quality_report.frame_advantage/10.f);
    return true;
@@ -765,11 +766,19 @@ UdpProtocol::PumpSendQueue()
 
      
       ASSERT(entry.dest_addr.sin_addr.s_addr);
+      int errorCode{ 0 };
 
-      _udp->SendTo((char *)entry.msg, entry.msg->PacketSize(), 0,
-                      (struct sockaddr *)&entry.dest_addr, sizeof entry.dest_addr);
-      delete entry.msg;
-      
+      // If send fails, don't pop the message, try to send it next time, and report an error
+      // repeated failure to send will result in disconnected
+      if (!_udp->SendTo((char*)entry.msg.get(), entry.msg->PacketSize(), 0,
+          (struct sockaddr*)&entry.dest_addr, sizeof entry.dest_addr, errorCode))
+      {
+          Event e(Event::Type::NetworkError);
+          e.u.network_error.errorCode = errorCode;
+          QueueEvent(e);
+          break;
+      }
+
       _send_queue.pop();
    }
 }
@@ -777,8 +786,7 @@ UdpProtocol::PumpSendQueue()
 void
 UdpProtocol::ClearSendQueue()
 {
-   while (!_send_queue.empty()) {
-      delete _send_queue.front().msg;
+   while (!_send_queue.empty()) {     
       _send_queue.pop();
    }
 }

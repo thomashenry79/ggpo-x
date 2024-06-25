@@ -27,8 +27,7 @@ Sync::~Sync()
    for (size_t i = 0; i < _savedstate.frames.size(); i++) {
       _callbacks.free_buffer(_callbacks.context, _savedstate.frames[i].buf);
    }
-   delete [] _input_queues;
-   _input_queues = NULL;
+   
 }
 
 void
@@ -245,8 +244,8 @@ Sync::FindSavedFrameIndex(int frame)
 bool
 Sync::CreateQueues()
 {
-   delete [] _input_queues;
-   _input_queues = new InputQueue[_config.num_players];
+    
+    _input_queues.resize(_config.num_players);
 
    for (int i = 0; i < _config.num_players; i++) {
       _input_queues[i].Init(i, _config.input_size);

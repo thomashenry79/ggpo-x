@@ -99,7 +99,7 @@ protected:
    int            _framecount;
    int            _max_prediction_frames;
 
-   InputQueue     *_input_queues;
+   std::vector<InputQueue>     _input_queues;
 
    RingBuffer<Event, 32> _event_queue;
    UdpMsg::connect_status *_local_connect_status;

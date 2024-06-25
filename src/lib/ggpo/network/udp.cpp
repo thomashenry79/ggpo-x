@@ -62,24 +62,30 @@ Udp::Init(uint16 port, Poll *poll, Callbacks *callbacks)
    _socket = CreateSocket(port, 0);
 }
 
-void
-Udp::SendTo(char *buffer, int len, int flags, struct sockaddr *dst, int destlen)
+bool Udp::SendTo(char *buffer, int len, int flags, struct sockaddr *dst, int destlen, int& errorcode)
 {
-   struct sockaddr_in *to = (struct sockaddr_in *)dst;
-
+    // Just for artificially triggering a network error
+   /* struct sockaddr_in* to = (struct sockaddr_in*)dst;
+    if (GetKeyState('A') & 0x8000 && ntohs(to->sin_port)==9567)
+    {
+        errorcode = 999;
+        return false;
+    }*/
    int res = sendto(_socket, buffer, len, flags, dst, destlen);
-   if (res == SOCKET_ERROR) {
-        DWORD err = WSAGetLastError();
-       std::string errorMessage = "Error in sendto (erro :" + std::to_string(res)  +" wsaerr: " + std::to_string(err) + ").\n";
-       Log("unknown error in sendto (erro: %d  wsaerr: %d).\n", res, err);
-
-      char assert_buf[1024];
-      snprintf(assert_buf, sizeof(assert_buf) - 1, "Assertion: %s @ %s:%d (pid:%d)", errorMessage.c_str(), __FILE__, __LINE__, (int)Platform::GetProcessID());                       \
-      Platform::AssertFailed(assert_buf);
-      exit(0); 
+   if (res == SOCKET_ERROR)
+   {
+       errorcode = WSAGetLastError();
+       return false;
    }
-   char dst_ip[1024];
-   Log("sent packet length %d to %s:%d (ret:%d).\n", len, inet_ntop(AF_INET, (void *)&to->sin_addr, dst_ip, ARRAY_SIZE(dst_ip)), ntohs(to->sin_port), res);
+   if (res < len)
+   {
+       errorcode = res-len;
+       return false;
+   }
+   return true;
+ 
+ //  char dst_ip[1024];
+ //  Log("sent packet length %d to %s:%d (ret:%d).\n", len, inet_ntop(AF_INET, (void *)&to->sin_addr, dst_ip, ARRAY_SIZE(dst_ip)), ntohs(to->sin_port), res);
 }
 
 bool

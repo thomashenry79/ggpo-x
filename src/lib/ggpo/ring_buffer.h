@@ -46,6 +46,13 @@ public:
       _size++;
    }
 
+   void push(T&& t) {
+       ASSERT(_size != (N - 1));
+       _elements[_head] = std::move(t);
+       _head = (_head + 1) % N;
+       _size++;
+   }
+
    int size() const {
       return _size;
    }

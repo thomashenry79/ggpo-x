@@ -49,9 +49,9 @@ public:
 			return;
 		}
 		 
-		lastAdvantage =  (lastAdvantage * 8) / 10;
+		lastAdvantage =  (lastAdvantage * 5) / 10;
 			 
-		 lastAdvantage += (thisAdvantage*10)/10;
+		 lastAdvantage += (thisAdvantage*8)/10;
 		if (lastAdvantage < 0)
 		{
 			m_usExtraToWait = 0;
@@ -160,6 +160,7 @@ struct NonGameState {
    ChecksumInfo         now;
    ChecksumInfo         periodic;
    int desyncFrame = -1;
+   int _networkErrorCount = 0;
 };
 
 #endif

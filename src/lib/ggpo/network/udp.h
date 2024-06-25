@@ -39,7 +39,7 @@ public:
 
    void Init(uint16 port, Poll *p, Callbacks *callbacks);
    
-   void SendTo(char *buffer, int len, int flags, struct sockaddr *dst, int destlen);
+   bool SendTo(char *buffer, int len, int flags, struct sockaddr *dst, int destlen, int& errorCode);
 
    bool OnLoopPoll() override;
 

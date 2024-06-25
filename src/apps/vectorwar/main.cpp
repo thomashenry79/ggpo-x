@@ -103,9 +103,9 @@ RunMainLoop(HWND hwnd)
          accumulator -= dt;
        //  dt = usToWait;
       }
-      auto baseuS = (playerNum == 1) ? dt +rand()%1000: dt + 200 + rand() % 500;
+      auto baseuS = dt;// (playerNum == 1) ? dt + rand() % 1000 : dt + 200 + rand() % 500;
       baseuS;
-      BusyWait(baseuS+ extraUS);
+      BusyWait(baseuS);
       VectorWar_DrawCurrentFrame();
      // Sleep(1);
 

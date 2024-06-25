@@ -98,6 +98,10 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
        sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "%d: %d",i, ngs.rollbacksBySize[i]);
        TextOutA(hdc, _rc.left + 50, _rc.top + 72+(16*i), statsinfo, (int)strlen(statsinfo));
    }
+
+   sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "Network errors: %d", ngs._networkErrorCount);
+   TextOutA(hdc, _rc.left + 50, _rc.top + 350, statsinfo, (int)strlen(statsinfo));
+
    if (ngs.desyncFrame >= 0)
    {
        sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "!!!!!!!!! DESYNC AT FRAME %d", ngs.desyncFrame);

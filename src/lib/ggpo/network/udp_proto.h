@@ -19,6 +19,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 class UdpProtocol : public IPollSink
 {
 public:
@@ -42,6 +43,7 @@ public:
          Disconnected,
          NetworkInterrupted,
          NetworkResumed,
+         NetworkError,
       };
 
       Type      type;
@@ -56,6 +58,9 @@ public:
          struct {
             int         disconnect_timeout;
          } network_interrupted;
+         struct {
+             int errorCode;
+         } network_error;
       } u;
 
       Event(Event::Type t = Event::Type::Unknown) : type(t) { };
@@ -96,6 +101,7 @@ public:
    void EndPollLoop();
    std::map<int, uint16> _remoteCheckSums;
    std::map<int, uint16> _remoteCheckSumsThisFrame;
+   UdpProtocol(UdpProtocol&&) = default;
 protected:
    enum State {
       Syncing,
@@ -106,10 +112,10 @@ protected:
    struct QueueEntry {
       int         queue_time;
       sockaddr_in dest_addr;
-      UdpMsg      *msg;
+      std::unique_ptr<UdpMsg>      msg;
 
       QueueEntry() {}
-      QueueEntry(int time, sockaddr_in &dst, UdpMsg *m) : queue_time(time), dest_addr(dst), msg(m) { }
+      QueueEntry(int time, sockaddr_in &dst, std::unique_ptr<UdpMsg>&&  m) : queue_time(time), dest_addr(dst), msg(std::move(m)) { }
    };
 
    void UpdateNetworkStats(void);
@@ -119,7 +125,7 @@ protected:
    void LogMsg(const char *prefix, UdpMsg *msg);
    void LogEvent(const char *prefix, const UdpProtocol::Event &evt);
    void SendSyncRequest();
-   void SendMsg(UdpMsg *msg);
+   void SendMsg(std::unique_ptr<UdpMsg>&& msg);
    void PumpSendQueue();
    void SendPendingOutput();
    bool OnInvalid(UdpMsg *msg, int len);
@@ -213,6 +219,7 @@ protected:
     */
    RingBuffer<UdpProtocol::Event, 64>  _event_queue;
    std::vector<std::string> _chatMessages;
+   UdpProtocol(const UdpProtocol&) = delete;
 };
 
 #endif
