@@ -124,7 +124,7 @@ vw_on_event_callback(void*, GGPOEvent *info)
    case GGPO_EVENTCODE_TIMESYNC:
       
        ngs.totalFrameDelays += info->u.timesync.frames_ahead;
-       ngs.loopTimer.OnGGPOTimeSyncEvent(info->u.timesync.frames_ahead);
+       ngs.loopTimer.OnGGPOTimeSyncEvent(info->u.timesync.frames_ahead,info->u.timesync.timeSyncPeriodInFrames);
 
        if (info->u.timesync.frames_ahead > 0) {
            ngs.nTimeSyncs++;
@@ -449,6 +449,11 @@ ReadInputs(HWND hwnd)
  *
  * Run a single frame of the game.
  */
+
+int localPlayerNumber()
+{
+    return ngs.local_player_handle;
+}
 void
 VectorWar_RunFrame(HWND hwnd, int&playerNum, int & extraUS)
 {

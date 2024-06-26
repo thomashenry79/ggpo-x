@@ -5,6 +5,7 @@
 #endif
 #include "vectorwar.h"
 #include "ggpo_perfmon.h"
+#include "nongamestate.h"
 #include <chrono>
 LRESULT CALLBACK
 MainWindowProc(HWND hwnd,
@@ -73,14 +74,36 @@ void BusyWait(int uS)
             break;
     }
 }
+
+using namespace std::chrono;
+
+void AccurateSleep(int timeToSleep)
+{
+    if (timeToSleep <= 0)
+        return;
+
+    auto start = high_resolution_clock::now();
+
+    // Sleep, but only to within 2ms of the target wait time (as sleep is not that accurate)
+    auto maxusToSleep = timeToSleep - 2000;
+    if (maxusToSleep > 1000) {
+        Sleep(maxusToSleep / 1000);
+    }
+
+    //Spin wait the rest
+    auto now = high_resolution_clock::now();
+    while (duration_cast<microseconds>(now - start).count() < timeToSleep) {
+        now = high_resolution_clock::now();
+    }
+}
 void
 RunMainLoop(HWND hwnd)
 {
    MSG msg = { 0 };
-   std::chrono::steady_clock::time_point start, next, now,newtime, current;
+   auto current = std::chrono::high_resolution_clock::now();
+   auto lastFrameEndTime = std::chrono::high_resolution_clock::now();
    int dt = 1000000 / 60;
   int accumulator = 0;
-   start = next = current =newtime = std::chrono::high_resolution_clock::now();
    while(1) {
       while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
          TranslateMessage(&msg); 
@@ -89,25 +112,31 @@ RunMainLoop(HWND hwnd)
             return;
          }
       }
-      newtime = std::chrono::high_resolution_clock::now(); 
-      auto frameTime = (int)std::chrono::duration_cast<std::chrono::microseconds>(newtime - current).count();
-      current = newtime;
+      auto newTime = lastFrameEndTime;
+      auto frameTime = (int)std::chrono::duration_cast<std::chrono::microseconds>(newTime - current).count();
+      current = newTime;
       accumulator += frameTime;
-    
+      if (accumulator >= dt * 5)
+          accumulator = dt * 5;
     //  
-      int playerNum=1;
+      int playerNum = localPlayerNumber();
       int extraUS = 0;
-    //  while(accumulator>= dt)
+      auto frameBudget = dt + extraUS;
+      while(accumulator>= frameBudget)
       {  
          VectorWar_RunFrame(hwnd, playerNum,extraUS);
-         accumulator -= dt;
+         accumulator -= frameBudget;
        //  dt = usToWait;
       }
-      auto baseuS = dt;// (playerNum == 1) ? dt + rand() % 1000 : dt + 200 + rand() % 500;
-      baseuS;
-      BusyWait(baseuS);
+      
+      
+     // auto frameTimeLeft = frameBudget - duration_cast<microseconds>(high_resolution_clock::now() - lastFrameEndTime).count();    
+     // BusyWait((int)frameTimeLeft);
+     
+      Sleep(rand()%20);
       VectorWar_DrawCurrentFrame();
-     // Sleep(1);
+   
+      lastFrameEndTime = high_resolution_clock::now();
 
    }
 }

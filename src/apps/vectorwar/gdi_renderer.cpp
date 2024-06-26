@@ -73,7 +73,7 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
    TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 72, statsinfo, (int)strlen(statsinfo));
    
    sprintf_s(statsinfo, ARRAYSIZE(statsinfo),
-       "Rbcks: %i, tsyncs: %i, negtsyncs: %i, inputreject: %d, RTT: %d, total fr dly :%.1f, extraUS: %d", 
+       "Rbcks: %i, tsyncs: %i, negtsyncs: %i, inputreject: %d, RTT: %d, total fr dly :%.1f, extraUS: %i", 
        ngs.nRollbacks, ngs.nTimeSyncs,ngs.nonTimeSyncs,ngs.inputDelays, ngs.stats.network.ping, ngs.totalFrameDelays,ngs.loopTimer.m_usExtraToWait);
 
    TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 88, statsinfo, (int)strlen(statsinfo));

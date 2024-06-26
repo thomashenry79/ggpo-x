@@ -28,7 +28,7 @@ void VectorWar_RunFrame(HWND hwnd, int& usToWait, int& extraUS);
 void VectorWar_Idle();
 void VectorWar_DisconnectPlayer(int player);
 void VectorWar_Exit();
-
+int localPlayerNumber();
 #define ARRAY_SIZE(n)      (sizeof(n) / sizeof(n[0]))
 #define FRAME_DELAY        2
 
