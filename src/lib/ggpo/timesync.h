@@ -28,7 +28,7 @@ public:
    float AvgLocalAdvantageSinceStart() const { return _avgLocal; }
    float AvgRemoteAdvantageSinceStart() const { return _avgRemote; }
    void SetFrameDelay(int frame);
-   int _frameDelay2 ;
+   int _frameDelay2 =0;
    int _remoteFrameDelay = 0;;
 protected:
    float         _local[FRAME_WINDOW_SIZE];

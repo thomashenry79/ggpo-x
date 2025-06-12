@@ -71,17 +71,23 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
        ngs.stats.timesync.local_frames_behind,
        ngs.stats.timesync.remote_frames_behind);
    TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 72, statsinfo, (int)strlen(statsinfo));
-   
+   auto estimate = (ngs.stats.timesync.local_frames_behind + ngs.stats.timesync.remote_frames_behind) / 2;
+   if(estimate <0)
+       sprintf_s(statsinfo,          ARRAYSIZE(statsinfo),           "We think we are %.1f frames ahead, and they are on %d", abs(estimate), ngs.now.framenumber + (int)std::round(estimate));
+   else
+       sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "We think we are %.1f frames behind and they are on %d", abs(estimate), ngs.now.framenumber +(int)std::round(estimate));
+   TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 88, statsinfo, (int)strlen(statsinfo));
+
    sprintf_s(statsinfo, ARRAYSIZE(statsinfo),
        "Rbcks: %i, tsyncs: %i, negtsyncs: %i, inputreject: %d, RTT: %d, total fr dly :%.1f, extraUS: %i", 
        ngs.nRollbacks, ngs.nTimeSyncs,ngs.nonTimeSyncs,ngs.inputDelays, ngs.stats.network.ping, ngs.totalFrameDelays,ngs.loopTimer.m_usExtraToWait);
 
-   TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 88, statsinfo, (int)strlen(statsinfo));
+   TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 102, statsinfo, (int)strlen(statsinfo));
    sprintf_s(statsinfo,
        ARRAYSIZE(statsinfo),
-       "Average advantage difference: %.2f",
-       ngs.stats.timesync.avg_local_frames_behind-       ngs.stats.timesync.avg_remote_frames_behind);
-   TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 102, statsinfo, (int)strlen(statsinfo));
+       "Average advantages: %.2f %.2f, diff %.2f", ngs.stats.timesync.avg_local_frames_behind , ngs.stats.timesync.avg_remote_frames_behind,
+       abs(ngs.stats.timesync.avg_local_frames_behind-       ngs.stats.timesync.avg_remote_frames_behind));
+   TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 116, statsinfo, (int)strlen(statsinfo));
   
    /*{
        sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "Slowing frame by %.2fpc", ngs.loopTimer.slowDownPC());

@@ -104,6 +104,7 @@ RunMainLoop(HWND hwnd)
    auto lastFrameEndTime = std::chrono::high_resolution_clock::now();
    int dt = 1000000 / 60;
   int accumulator = 0;
+  int extraUS = 0;
    while(1) {
       while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
          TranslateMessage(&msg); 
@@ -120,7 +121,7 @@ RunMainLoop(HWND hwnd)
           accumulator = dt * 5;
     //  
       int playerNum = localPlayerNumber();
-      int extraUS = 0;
+     
       auto frameBudget = dt + extraUS;
       while(accumulator>= frameBudget)
       {  

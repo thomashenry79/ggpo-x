@@ -54,7 +54,7 @@ public:
 		m_usExtraToWait = (int)(ticksAhead / nTimeSyncInterval);
 
 		// Divive by 3 for reasons described above
-		m_usExtraToWait /= 2;
+		m_usExtraToWait /= 5;
 		//m_usExtraToWait = 0;
 		//auto thisAdvantage = /*(int)*/(1000.0f * framesAhead / 60.0f);// *0.5f;
 		//nCalls++;

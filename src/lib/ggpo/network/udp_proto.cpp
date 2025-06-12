@@ -531,7 +531,10 @@ UdpProtocol::OnSyncReply(UdpMsg *msg, int )
    Log("Checking sync state (%d round trips remaining).\n", _state.sync.roundtrips_remaining);
    if (--_state.sync.roundtrips_remaining == 0) {
       Log("Synchronized!\n");
-      QueueEvent(UdpProtocol::Event(UdpProtocol::Event::Type::Synchronzied));
+      UdpProtocol::Event evt(UdpProtocol::Event::Type::Synchronzied);
+      evt.u.syncInfo.remoteFrameDelay = _timesync._remoteFrameDelay;
+      evt.u.syncInfo.localFrameDelay = _timesync._frameDelay2;
+      QueueEvent(evt);
       _current_state = Running;
       _last_received_input.frame = -1;
       _remote_magic_number = msg->hdr.magic;
@@ -735,7 +738,7 @@ UdpProtocol::SetLocalFrameNumber(int localFrame)
     * it means they'll have to predict more often and our moves will
     * pop more frequenetly.
     */
-   _local_frame_advantage = (float)(remoteFrame - localFrame)- _timesync._frameDelay2;
+    _local_frame_advantage = (float)(remoteFrame - localFrame);
 }
 
 float
