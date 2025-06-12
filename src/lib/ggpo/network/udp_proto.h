@@ -221,7 +221,7 @@ protected:
    /*
     * Event queue
     */
-   RingBuffer<UdpProtocol::Event, 64>  _event_queue;
+   RingBuffer<UdpProtocol::Event, 128>  _event_queue;
    std::vector<std::string> _chatMessages;
    UdpProtocol(const UdpProtocol&) = delete;
 };

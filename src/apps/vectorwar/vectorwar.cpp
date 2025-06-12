@@ -271,7 +271,7 @@ VectorWar_Init(HWND hwnd, unsigned short localport, int num_players, GGPOPlayer 
    cb.log_game_state  = vw_log_game_state;
    p1IsLocal = players[0].type == GGPO_PLAYERTYPE_LOCAL;
    ngs.LocalPLayerNumber = p1IsLocal ? 1 : 2;
-   ngs.inputDelay = p1IsLocal ? 60 : 2;
+   ngs.inputDelay = p1IsLocal ? 50 : 5;
    ngs.loopTimer.m_usPerGameLoop = p1IsLocal ? 1000000 / 59 : 1000000 / 60;
 #if defined(SYNC_TEST)
    result = ggpo_start_synctest(&ggpo, &cb, "vectorwar", num_players, sizeof(int), 1);
@@ -303,7 +303,7 @@ VectorWar_Init(HWND hwnd, unsigned short localport, int num_players, GGPOPlayer 
          ngs.remote_player_handle = handle;
       }
    }
-   ggpo_set_frame_delay(ggpo, ngs.local_player_handle, ngs.inputDelay);
+   ggpo_set_frame_delay(ggpo, ngs.local_player_handle, 0/*ngs.inputDelay*/);
    ggpoutil_perfmon_init(hwnd);
    renderer->SetStatusText("Connecting to peers.");
 }
@@ -339,7 +339,9 @@ VectorWar_InitSpectator(HWND hwnd, unsigned short localport, int num_players, ch
 
    renderer->SetStatusText("Starting new spectator session");
 }
-
+#include <map>
+#include <vector>
+std::vector<GameState> stateHistory;
 
 /*
  * VectorWar_DisconnectPlayer --
@@ -371,9 +373,22 @@ VectorWar_DisconnectPlayer(int player)
 void
 VectorWar_DrawCurrentFrame()
 {
+
+    int frameToDraw = ngs.now.framenumber - ngs.inputDelay;
+    size_t i = 0;
+    for (; i < stateHistory.size(); i++)
+    {
+        if (stateHistory[i]._framenumber == frameToDraw)
+            break;
+    }
+
+    if (i>= stateHistory.size())
+        return;
+
    if (renderer != nullptr) {
-      renderer->Draw(gs, ngs);
+      renderer->Draw(stateHistory[i], ngs);
    }
+   stateHistory.erase(stateHistory.begin(), stateHistory.begin()+i+1);
 }
 
 /*
@@ -389,13 +404,25 @@ void VectorWar_AdvanceFrame(int inputs[], int disconnect_flags)
    // update the checksums to display in the top of the window.  this
    // helps to detect desyncs.
    ngs.now.framenumber = gs._framenumber;
-   gs._framenumber = 0;
+  // gs._framenumber = 0;
    ngs.now.checksum = Fletcher16((uint8_t *)&gs, sizeof(gs));
-   gs._framenumber= ngs.now.framenumber;
+   //gs._framenumber= ngs.now.framenumber;
    if ((gs._framenumber % 90) == 0) {
       ngs.periodic = ngs.now;
    }
 
+   size_t iframe = 0;
+   for (; iframe < stateHistory.size(); iframe++)
+   {
+       if (stateHistory[iframe]._framenumber == gs._framenumber)
+           break;
+   }
+
+   if (iframe >= stateHistory.size())
+       stateHistory.push_back(gs);
+   else
+       stateHistory[iframe] = gs;
+   
    // Notify ggpo that we've moved forward exactly 1 frame.
    ggpo_advance_frame(ggpo, ngs.now.checksum);
 
