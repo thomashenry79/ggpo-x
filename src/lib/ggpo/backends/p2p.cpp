@@ -15,7 +15,7 @@ Peer2PeerBackend::Peer2PeerBackend(GGPOSessionCallbacks *cb,
                                    const char *gamename,
                                    uint16 localport,
                                    int num_players,
-                                   int input_size, int nframes) :
+                                   int input_size, int nframes,float fps) :
     _sync(_local_connect_status, nframes),
     _num_spectators(0),
     _input_size(input_size),
@@ -25,7 +25,8 @@ Peer2PeerBackend::Peer2PeerBackend(GGPOSessionCallbacks *cb,
     
     _next_spectator_frame(0),
     _disconnect_timeout(DEFAULT_DISCONNECT_TIMEOUT),
-    _disconnect_notify_start(DEFAULT_DISCONNECT_NOTIFY_START)
+    _disconnect_notify_start(DEFAULT_DISCONNECT_NOTIFY_START),
+    _fps(fps)
    
    
 {
@@ -76,7 +77,7 @@ Peer2PeerBackend::AddRemotePlayer(char *ip,
     */
    _synchronizing = true;
    
-   _endpoints[queue].Init(&_udp, _poll, queue, ip, port, _local_connect_status);
+   _endpoints[queue].Init(&_udp, _poll, queue, ip, port, _local_connect_status,_fps);
    _endpoints[queue].SetDisconnectTimeout(_disconnect_timeout);
    _endpoints[queue].SetDisconnectNotifyStart(_disconnect_notify_start);
    _endpoints[queue].Synchronize();
@@ -96,7 +97,7 @@ GGPOErrorCode Peer2PeerBackend::AddSpectator(char *ip,
    }
    int queue = _num_spectators++;
 
-   _spectators[queue].Init(&_udp, _poll, queue + 1000, ip, port, _local_connect_status);
+   _spectators[queue].Init(&_udp, _poll, queue + 1000, ip, port, _local_connect_status, _fps);
    _spectators[queue].SetDisconnectTimeout(_disconnect_timeout);
    _spectators[queue].SetDisconnectNotifyStart(_disconnect_notify_start);
    _spectators[queue].Synchronize();
@@ -503,7 +504,7 @@ Peer2PeerBackend::PollUdpProtocolEvents(void)
 
 int Peer2PeerBackend::HowFarBackForChecksums()const
 {
-    return 120;
+    return 16;
 }/*
 uint16 Peer2PeerBackend::GetChecksumForConfirmedFrame(int frameNumber) const
 {

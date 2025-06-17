@@ -78,15 +78,19 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
        sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "We think we are %.1f frames behind and they are on %d", abs(estimate), ngs.now.framenumber +(int)std::round(estimate));
    TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 88, statsinfo, (int)strlen(statsinfo));
 
+   auto ticksPerFrame = 1000000 / (float)60;
+   auto actualticksPerFrame = ticksPerFrame + ngs.loopTimer.m_usExtraToWait;
+   float pcFrameTime = 100.0f * (actualticksPerFrame / ticksPerFrame);
    sprintf_s(statsinfo, ARRAYSIZE(statsinfo),
-       "Rbcks: %i, tsyncs: %i, negtsyncs: %i, inputreject: %d, RTT: %d, total fr dly :%.1f, extraUS: %i", 
-       ngs.nRollbacks, ngs.nTimeSyncs,ngs.nonTimeSyncs,ngs.inputDelays, ngs.stats.network.ping, ngs.totalFrameDelays,ngs.loopTimer.m_usExtraToWait);
+       "Rbcks: %i, tsyncs: %i, ntsyncs: %i, inputreject: %d, RTT: %d, total fr dly :%.1f, extraUS: %i, %.2fpc", 
+       ngs.nRollbacks, ngs.nTimeSyncs,ngs.nonTimeSyncs,ngs.inputDelays, ngs.stats.network.ping, ngs.totalFrameDelays,ngs.loopTimer.m_usExtraToWait, pcFrameTime);
 
    TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 102, statsinfo, (int)strlen(statsinfo));
+   auto avg = (ngs.stats.timesync.avg_local_frames_behind + ngs.stats.timesync.avg_remote_frames_behind) / 2.0f;
    sprintf_s(statsinfo,
        ARRAYSIZE(statsinfo),
-       "Average advantages: %.2f %.2f, diff %.2f", ngs.stats.timesync.avg_local_frames_behind , ngs.stats.timesync.avg_remote_frames_behind,
-       abs(ngs.stats.timesync.avg_local_frames_behind-       ngs.stats.timesync.avg_remote_frames_behind));
+       "Average advantages: %.2f %.2f, diff %.2f, estimate avg: %.2f", ngs.stats.timesync.avg_local_frames_behind , ngs.stats.timesync.avg_remote_frames_behind,
+       abs(ngs.stats.timesync.avg_local_frames_behind-       ngs.stats.timesync.avg_remote_frames_behind), avg);
    TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 116, statsinfo, (int)strlen(statsinfo));
   
    /*{
@@ -105,7 +109,7 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
        TextOutA(hdc, _rc.left + 50, _rc.top + 72+(16*i), statsinfo, (int)strlen(statsinfo));
    }
 
-   sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "Network errors: %d", ngs._networkErrorCount);
+   sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "Network errors: %d ping %d", ngs._networkErrorCount,ngs.stats.network.ping);
    TextOutA(hdc, _rc.left + 50, _rc.top + 350, statsinfo, (int)strlen(statsinfo));
 
    if (ngs.desyncFrame >= 0)

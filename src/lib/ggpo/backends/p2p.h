@@ -17,7 +17,7 @@
 #include <map>
 class Peer2PeerBackend : public GGPOSession,  Udp::Callbacks {
 public:
-   Peer2PeerBackend(GGPOSessionCallbacks *cb, const char *gamename, uint16 localport, int num_players, int input_size, int nframes);
+   Peer2PeerBackend(GGPOSessionCallbacks *cb, const char *gamename, uint16 localport, int num_players, int input_size, int nframes, float fps);
    virtual ~Peer2PeerBackend();
 
 
@@ -83,6 +83,7 @@ protected:
    int HowFarBackForChecksums()const;
    int _confirmedCheckSumFrame = -500;
    void CheckDesync();
+   float _fps;
 };
 
 #endif

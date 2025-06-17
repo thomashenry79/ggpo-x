@@ -20,10 +20,10 @@ static const int QUALITY_REPORT_INTERVAL =  333;
 static const int NETWORK_STATS_INTERVAL  = 500;
 static const int UDP_SHUTDOWN_TIMER = 5000;
 static const int MAX_SEQ_DISTANCE = (1 << 15);
+//constexpr float GAMEFPS = 60.0f;
 
 
-
-UdpProtocol::UdpProtocol()    
+UdpProtocol::UdpProtocol()
 {
    _last_sent_input.init(-1, NULL, 1);
    _last_received_input.init(-1, NULL, 1);
@@ -60,12 +60,13 @@ UdpProtocol::Init(Udp *udp,
                   int queue,
                   char *ip,
                   u_short port,
-                  UdpMsg::connect_status *status)
+                  UdpMsg::connect_status *status,
+                   float fps)
 {  
    _udp = udp;
    _queue = queue;
    _local_connect_status = status;
-
+   _fps = fps;
    _peer_addr.sin_family = AF_INET;
    _peer_addr.sin_port = htons(port);
    inet_pton(AF_INET, ip, &_peer_addr.sin_addr.s_addr);
@@ -687,7 +688,23 @@ UdpProtocol::OnQualityReport(UdpMsg *msg, int )
 bool
 UdpProtocol::OnQualityReply(UdpMsg *msg, int )
 {
-   _round_trip_time = Platform::GetCurrentTimeMS() - msg->u.quality_reply.pong;
+    constexpr int emaPeriodMS = 10000;
+    constexpr int pingPeriodMS = QUALITY_REPORT_INTERVAL;
+    constexpr int nSamples = emaPeriodMS / pingPeriodMS;
+    constexpr  double emaConstant = 2 / (1.0 + nSamples);
+    double frameTime = 1000.0 / _fps;
+  
+    double thisPing = (Platform::GetCurrentTimeMS() - msg->u.quality_reply.pong);
+    thisPing -= frameTime; // on average... it will take tme half a frame to see out ping and us half a frame to see their ping;
+    
+    // Shouldn't happen
+    if (thisPing < 0)
+        thisPing = 0;
+
+    if (_round_trip_time == 0)
+        _round_trip_time = thisPing;
+    else
+        _round_trip_time = (thisPing * emaConstant) + (_round_trip_time * (1 - emaConstant));
  
 
    return true;
@@ -713,7 +730,7 @@ bool UdpProtocol::OnChat(UdpMsg* msg, int )
 void
 UdpProtocol::GetNetworkStats(struct GGPONetworkStats *s)
 {
-   s->network.ping = _round_trip_time;
+   s->network.ping = (int)std::round(_round_trip_time);
    s->network.send_queue_len = _pending_output.size();
    s->network.kbps_sent = _kbps_sent;
    s->timesync.remote_frames_behind = _timesync.RemoteAdvantage();
@@ -730,7 +747,16 @@ UdpProtocol::SetLocalFrameNumber(int localFrame)
     * last frame they gave us plus some delta for the one-way packet
     * trip time.
     */
-    float remoteFrame = _last_received_input.frame + (_round_trip_time * 60.f / 2000);
+    // Single trip time is half round trip time (assumption..... ping might not be symmetric)
+    float  singleTripTime = (float)_round_trip_time / 2.0f;
+    
+    float singleTripTimeInFrames = singleTripTime * _fps / 1000;
+   
+    // We guess their current frame is the last frame we got from them, plus however many
+    // frames a single trip would take, plus half a frame (as on average, the message will 
+    // come into us halfway through one of our frames, so will be half a frame old by the time 
+    // we process it
+    float remoteFrameEstimate = _last_received_input.frame + singleTripTimeInFrames + 1.0f;
 
    /*
     * Our frame advantage is how many frames *behind* the other guy
@@ -738,7 +764,7 @@ UdpProtocol::SetLocalFrameNumber(int localFrame)
     * it means they'll have to predict more often and our moves will
     * pop more frequenetly.
     */
-    _local_frame_advantage = (float)(remoteFrame - localFrame);
+    _local_frame_advantage = (remoteFrameEstimate - (float)localFrame);
 }
 
 float

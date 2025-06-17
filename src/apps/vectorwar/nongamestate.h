@@ -40,46 +40,25 @@ public:
 	}
 	void OnGGPOTimeSyncEvent(float framesAhead, int nTimeSyncInterval)
 	{
-
+		if (abs(framesAhead) < 0.25f)
+		{
+			m_usExtraToWait = 0;
+			return;
+		}
 
 		
 
 		// This message tells us we are running ahead or behind the opponent, so we should speed up or slow down our loop a bit.
-		// This message comes every nTimeSyncInterval frames. We aim to speed up/slow down 33% of reported difference by the time of the 
-		// next sync message. 33% is chosen in order to avoid overcompensation - the other player will be doing 33% in the opposite direction,
-		// giving 66% overall. So the gap should reduce geometrically, but not overshoot.
-		// We spread the 33% wait/speedup over the next nTimeSyncInterval frames, 
+		// This message comes every nTimeSyncInterval frames. We aim to speed up/slow down 25% of reported difference by the time of the 
+		// next sync message. 33% is chosen in order to avoid overcompensation - the other player will be doing 25% in the opposite direction,
+		// giving 50% overall. So the gap should reduce geometrically, but not overshoot.
+		// We spread the 25% wait/speedup over the next nTimeSyncInterval frames, 
 		auto ticksPerFrame = 1000000 / (float)60;
 		float ticksAhead = ticksPerFrame * framesAhead; // could be negative if behind
 		m_usExtraToWait = (int)(ticksAhead / nTimeSyncInterval);
 
 		// Divive by 3 for reasons described above
-		m_usExtraToWait /= 5;
-		//m_usExtraToWait = 0;
-		//auto thisAdvantage = /*(int)*/(1000.0f * framesAhead / 60.0f);// *0.5f;
-		//nCalls++;
-		//if (nCalls <= 1)
-		//{
-		//	if (thisAdvantage > 0)
-		//		Sleep((int)thisAdvantage);
-		//	return;
-		//}
-		// 
-		//lastAdvantage =  (lastAdvantage * 5) / 10;
-		//	 
-		// lastAdvantage += (thisAdvantage*8)/10;
-		//if (lastAdvantage < 0)
-		//{
-		//	m_usExtraToWait = 0;
-		//	return;
-		//}
-		//m_usExtraToWait = (int)(lastAdvantage*1000);
-		//if (m_usExtraToWait)
-		//{
-		//	//BusyWait(m_usExtraToWait);
-		//	m_usExtraToWait /= m_framesToSpreadWait;
-		//	m_WaitCount = m_framesToSpreadWait;
-		//}
+		m_usExtraToWait /= 4;
 	}
 
 	int slowdown() 

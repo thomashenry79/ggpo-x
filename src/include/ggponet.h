@@ -350,7 +350,8 @@ GGPO_API GGPOErrorCode __cdecl ggpo_start_session(GGPOSession **session,
                                                   int num_players,
                                                   int input_size,
                                                   unsigned short localport,
-                                                  int maxPrediction);
+                                                  int maxPrediction,
+                                                  float fps);
 
 
 /*

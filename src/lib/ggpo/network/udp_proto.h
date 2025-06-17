@@ -77,7 +77,7 @@ public:
    UdpProtocol();
    virtual ~UdpProtocol();
 
-   void Init(Udp *udp, Poll &p, int queue, char *ip, u_short port, UdpMsg::connect_status *status);
+   void Init(Udp *udp, Poll &p, int queue, char *ip, u_short port, UdpMsg::connect_status *status,float fps);
 
    void Synchronize();
    bool GetPeerConnectStatus(int id, int *frame);
@@ -164,7 +164,7 @@ protected:
    /*
     * Stats
     */
-   int            _round_trip_time = 0;
+   double            _round_trip_time = 0;
    int            _packets_sent=0;
    int            _bytes_sent=0;
    int            _kbps_sent=0;
@@ -194,7 +194,7 @@ protected:
     */
    float               _local_frame_advantage=0;
    float               _remote_frame_advantage=0;
-
+   float _fps;
    /*
     * Packet loss...
     */

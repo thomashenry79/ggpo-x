@@ -42,14 +42,15 @@ ggpo_start_session(GGPOSession **session,
                    int num_players,
                    int input_size,
                    unsigned short localport,
-                   int maxPrediction)
+                   int maxPrediction,
+                   float fps)
 {
    *session= new Peer2PeerBackend(cb,
                                                  game,
                                                  localport,
                                                  num_players,
                                                  input_size,
-                                                    maxPrediction);
+                                                    maxPrediction,fps);
    return GGPO_OK;
 }
 

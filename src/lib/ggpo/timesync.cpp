@@ -35,8 +35,9 @@ TimeSync::advance_frame(GameInput &input, float advantage, float radvantage)
   
    nFrame++;   
    //Clear after first 3 seconds, as this is a bit crazy
-   if (!clearedInitial && nFrame == 240)
+   if (!clearedInitial && nFrame == 300)
    {
+       _avgLocal = _avgRemote = 0;
        clearedInitial = true;
        nFrame = 0;
    }
