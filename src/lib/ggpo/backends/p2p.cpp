@@ -363,7 +363,7 @@ Peer2PeerBackend::AddLocalInput(GGPOPlayerHandle player,
       // confirmed local frame for this player.  this must come first so it
       // gets incorporated into the next packet we send.
 
-       // Send checksum for frames old enough to be confirmed (ie older then current - MaxPredictionFrames())
+       // Send checksum for frames old enough to be confirmed (ie older then current - (MaxPredictionFrames()+maxrollbackFrames))
 
        
       
