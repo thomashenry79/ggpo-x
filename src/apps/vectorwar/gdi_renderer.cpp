@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <stdio.h>
-#include <math.h>
+#include <cmath>
 #include "vectorwar.h"
 #include "gdi_renderer.h"
 
