@@ -39,12 +39,7 @@ public:
       _size--;
    }
 
-   void push(const T &t) {
-       if (_size == (N - 1))
-       {
-           int gg = 0;
-           gg++;
-      }
+   void push(const T &t) {       
       ASSERT(_size != (N-1));
       _elements[_head] = t;
       _head = (_head + 1) % N;

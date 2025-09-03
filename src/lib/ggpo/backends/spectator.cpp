@@ -168,6 +168,7 @@ SpectatorBackend::OnUdpProtocolEvent(UdpProtocol::Event &evt)
    break;
    }
    case UdpProtocol::Event::Type::Unknown:
+   case UdpProtocol::Event::Type::NetworkError:
        break;
    }
 }

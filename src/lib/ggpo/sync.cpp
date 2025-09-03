@@ -234,9 +234,7 @@ Sync::FindSavedFrameIndex(int frame)
          break;
       }
    }
-   if (i == count) {
-       int t = 0;
-       t++;
+   if (i == count) {       
       ASSERT(FALSE);
    }
    return i;
