@@ -154,6 +154,8 @@ vw_advance_frame_callback(void*, int)
    // Make sure we fetch new inputs from GGPO and use those to update
    // the game state instead of reading from the keyboard.
    ggpo_synchronize_input(ggpo, (void *)inputs, sizeof(int) * MAX_SHIPS, &disconnect_flags);
+   ngs.p1Input = inputs[0];
+   ngs.p2Input = inputs[1];
    VectorWar_AdvanceFrame(inputs, disconnect_flags);
    return true;
 }
@@ -271,8 +273,8 @@ VectorWar_Init(HWND hwnd, unsigned short localport, int num_players, GGPOPlayer 
    cb.log_game_state  = vw_log_game_state;
    p1IsLocal = players[0].type == GGPO_PLAYERTYPE_LOCAL;
    ngs.LocalPLayerNumber = p1IsLocal ? 1 : 2;
-   ngs.inputDelay = p1IsLocal ? 50 : 5;
-   ngs.loopTimer.m_usPerGameLoop = p1IsLocal ? 1000000 / 59 : 1000000 / 60;
+   ngs.inputDelay = p1IsLocal ? 0 : 8;
+   ngs.loopTimer.m_usPerGameLoop = p1IsLocal ? 1000000 / 60 : 1000000 / 60;
 #if defined(SYNC_TEST)
    result = ggpo_start_synctest(&ggpo, &cb, "vectorwar", num_players, sizeof(int), 1,60.0f);
 #else
@@ -303,7 +305,7 @@ VectorWar_Init(HWND hwnd, unsigned short localport, int num_players, GGPOPlayer 
          ngs.remote_player_handle = handle;
       }
    }
-   ggpo_set_frame_delay(ggpo, ngs.local_player_handle, 0/*ngs.inputDelay*/);
+   ggpo_set_frame_delay(ggpo, ngs.local_player_handle, ngs.inputDelay);
    ggpoutil_perfmon_init(hwnd);
    renderer->SetStatusText("Connecting to peers.");
 }
@@ -374,7 +376,7 @@ void
 VectorWar_DrawCurrentFrame()
 {
 
-    int frameToDraw = ngs.now.framenumber - ngs.inputDelay;
+    int frameToDraw = ngs.now.framenumber - 0;// ngs.inputDelay;
     size_t i = 0;
     for (; i < stateHistory.size(); i++)
     {
@@ -486,6 +488,10 @@ int localPlayerNumber()
 void
 VectorWar_RunFrame(HWND hwnd, int&playerNum, int & extraUS)
 {
+
+    ngs.currentInput = 0;
+    ngs.p1Input = 0;
+    ngs.p2Input = 0;
     // Rest these counts after 3 seconds as they take a hit right at the start while the connection stabilises.
     if (ngs.now.framenumber == 240)
     {
@@ -512,6 +518,7 @@ VectorWar_RunFrame(HWND hwnd, int&playerNum, int & extraUS)
      input = rand(); // test: use random inputs to demonstrate sync testing
 #endif
      result = ggpo_add_local_input(ggpo, ngs.local_player_handle, &input, sizeof(input));
+     ngs.currentInput = input;
   }
   
  
@@ -524,6 +531,8 @@ VectorWar_RunFrame(HWND hwnd, int&playerNum, int & extraUS)
      if (GGPO_SUCCEEDED(result)) {
          // inputs[0] and inputs[1] contain the inputs for p1 and p2.  Advance
          // the game by 1 frame using those inputs.
+         ngs.p1Input = inputs[0];
+         ngs.p2Input = inputs[1];
          VectorWar_AdvanceFrame(inputs, disconnect_flags);
          needIdle = false;
      }

@@ -112,6 +112,9 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
    sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "Network errors: %d ping %d", ngs._networkErrorCount,ngs.stats.network.ping);
    TextOutA(hdc, _rc.left + 50, _rc.top + 350, statsinfo, (int)strlen(statsinfo));
 
+   sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "Inputs: current: %d, p1: %d, p2 %d", ngs.currentInput, ngs.p1Input, ngs.p2Input);
+   TextOutA(hdc, _rc.left + 50, _rc.top + 370, statsinfo, (int)strlen(statsinfo));
+
    if (ngs.desyncFrame >= 0)
    {
        sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "!!!!!!!!! DESYNC AT FRAME %d", ngs.desyncFrame);

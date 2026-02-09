@@ -153,6 +153,10 @@ struct NonGameState {
    ChecksumInfo         periodic;
    int desyncFrame = -1;
    int _networkErrorCount = 0;
+   int currentInput = 0;
+   int p1Input = 0;
+   int p2Input = 0;
+
 };
 
 #endif
