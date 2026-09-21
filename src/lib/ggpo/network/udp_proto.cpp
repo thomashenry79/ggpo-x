@@ -218,52 +218,65 @@ UdpProtocol::OnLoopPoll()
       break;
 
    case Running:
-      // xxx: rig all this up with a timer wrapper
-      if (!_state.running.last_input_packet_recv_time || _state.running.last_input_packet_recv_time + RUNNING_RETRY_INTERVAL < now) {
-         Log("Haven't exchanged packets in a while (last received:%d  last sent:%d).  Resending.\n", _last_received_input.frame, _last_sent_input.frame);
-         SendPendingOutput();
-         _state.running.last_input_packet_recv_time = now;
-      }
+   {   // xxx: rig all this up with a timer wrapper
+       if (!_state.running.last_input_packet_recv_time || _state.running.last_input_packet_recv_time + RUNNING_RETRY_INTERVAL < now) {
+           Log("Haven't exchanged packets in a while (last received:%d  last sent:%d).  Resending.\n", _last_received_input.frame, _last_sent_input.frame);
+           SendPendingOutput();
+           _state.running.last_input_packet_recv_time = now;
+       }
 
-      if (!_state.running.last_quality_report_time || _state.running.last_quality_report_time + QUALITY_REPORT_INTERVAL < now) {
-          auto msg = std::make_unique<UdpMsg>(UdpMsg::QualityReport);
-       
-         msg->u.quality_report.ping = Platform::GetCurrentTimeMS();
-         // encode frame advantage into a byte by multiplying the float by 10, and croppeing to 255 - any frame advantage
-         // of 25 or more means catastrophe has already befallen us.
-         msg->u.quality_report.frame_advantage = (uint8)min(255.0f,(_timesync.LocalAdvantage()*10.f));
-         SendMsg(std::move(msg));
-         _state.running.last_quality_report_time = now;
-      }
+       if (!_state.running.last_quality_report_time || _state.running.last_quality_report_time + QUALITY_REPORT_INTERVAL < now) {
+           auto msg = std::make_unique<UdpMsg>(UdpMsg::QualityReport);
 
-      if (!_state.running.last_network_stats_interval || _state.running.last_network_stats_interval + NETWORK_STATS_INTERVAL < now) {
-         UpdateNetworkStats();
-         _state.running.last_network_stats_interval =  now;
-      }
+           msg->u.quality_report.ping = Platform::GetCurrentTimeMS();
+           // tell them our RTT estimate as well. both sides will use an average of the locally computed one and the opponents one.
+           msg->u.quality_report.round_trip_time = (uint32)std::round(_round_trip_time);
 
-      if (_last_send_time && _last_send_time + KEEP_ALIVE_INTERVAL < now) {
-         Log("Sending keep alive packet\n");
-         SendMsg(std::make_unique<UdpMsg>(UdpMsg::KeepAlive));
-      }
+           // encode frame advantage into a byte by multiplying the float by 10, and croppeing to 255 - any frame advantage
+           // of 25 or more means catastrophe has already befallen us.
+           msg->u.quality_report.frame_advantage = (uint8)min(255.0f, (_timesync.LocalAdvantage() * 10.f));
+           SendMsg(std::move(msg));
+           _state.running.last_quality_report_time = now;
+       }
 
-      if (_disconnect_timeout && _disconnect_notify_start && 
-         !_disconnect_notify_sent && (_last_recv_time + _disconnect_notify_start < now)) {
-         Log("Endpoint has stopped receiving packets for %d ms.  Sending notification.\n", _disconnect_notify_start);
-         Event e(Event::Type::NetworkInterrupted);
-         e.u.network_interrupted.disconnect_timeout = _disconnect_timeout - _disconnect_notify_start;
-         QueueEvent(e);
-         _disconnect_notify_sent = true;
-      }
+       // If we have not received a quality report from the other guy for a long time, stop using their most recently reported frame_advantage estimate
+       // as it's likely way out of date - use ours instead, as a stand-in until we get a quality report from them
+       const int gracePeriodForLateQualityReportReceiptMS = 80;
+       if (_state.running.last_quality_report_recv_time &&
+           now - _state.running.last_quality_report_recv_time > (QUALITY_REPORT_INTERVAL + gracePeriodForLateQualityReportReceiptMS))
+       {
+           _remote_frame_advantage = -_local_frame_advantage;
+           OutputDebugStringA("Use local frame adv as guess for remote\n"); 
+           _state.running.last_quality_report_recv_time = now;
+       }
+       if (!_state.running.last_network_stats_interval || _state.running.last_network_stats_interval + NETWORK_STATS_INTERVAL < now) {
+           UpdateNetworkStats();
+           _state.running.last_network_stats_interval = now;
+       }
 
-      if (_disconnect_timeout && (_last_recv_time + _disconnect_timeout < now)) {
-         if (!_disconnect_event_sent) {
-            Log("Endpoint has stopped receiving packets for %d ms.  Disconnecting.\n", _disconnect_timeout);
-            QueueEvent(Event(Event::Type::Disconnected));
-            _disconnect_event_sent = true;
-         }
-      }
-      break;
+       if (_last_send_time && _last_send_time + KEEP_ALIVE_INTERVAL < now) {
+           Log("Sending keep alive packet\n");
+           SendMsg(std::make_unique<UdpMsg>(UdpMsg::KeepAlive));
+       }
 
+       if (_disconnect_timeout && _disconnect_notify_start &&
+           !_disconnect_notify_sent && (_last_recv_time + _disconnect_notify_start < now)) {
+           Log("Endpoint has stopped receiving packets for %d ms.  Sending notification.\n", _disconnect_notify_start);
+           Event e(Event::Type::NetworkInterrupted);
+           e.u.network_interrupted.disconnect_timeout = _disconnect_timeout - _disconnect_notify_start;
+           QueueEvent(e);
+           _disconnect_notify_sent = true;
+       }
+
+       if (_disconnect_timeout && (_last_recv_time + _disconnect_timeout < now)) {
+           if (!_disconnect_event_sent) {
+               Log("Endpoint has stopped receiving packets for %d ms.  Disconnecting.\n", _disconnect_timeout);
+               QueueEvent(Event(Event::Type::Disconnected));
+               _disconnect_event_sent = true;
+           }
+       }
+       break;
+   }
    case Disconnected:
       if (_shutdown_timeout < now) {
          Log("Shutting down udp connection.\n");
@@ -682,13 +695,16 @@ UdpProtocol::OnQualityReport(UdpMsg *msg, int )
    SendMsg(std::move(reply));
 
    _remote_frame_advantage = (float)(msg->u.quality_report.frame_advantage/10.f);
+   _state.running.last_quality_report_recv_time = Platform::GetCurrentTimeMS();
+   _remote_rtt_estimate = msg->u.quality_report.round_trip_time;
+   OutputDebugStringA("Received quality report\n");
    return true;
 }
 
 bool
 UdpProtocol::OnQualityReply(UdpMsg *msg, int )
 {
-    constexpr int emaPeriodMS = 10000;
+    constexpr int emaPeriodMS = 5000;
     constexpr int pingPeriodMS = QUALITY_REPORT_INTERVAL;
     constexpr int nSamples = emaPeriodMS / pingPeriodMS;
     constexpr  double emaConstant = 2 / (1.0 + nSamples);
@@ -697,6 +713,12 @@ UdpProtocol::OnQualityReply(UdpMsg *msg, int )
     double thisPing = (Platform::GetCurrentTimeMS() - msg->u.quality_reply.pong);
     thisPing -= frameTime; // on average... it will take tme half a frame to see out ping and us half a frame to see their ping;
     
+    //// ignore large spikes that are probably network interruptions
+    //if (_pingCount > 10 && thisPing > _round_trip_time * 3)
+    //{
+    //    OutputDebugStringA("Ignore big ping\n");
+    //    return true;
+    //}
     // Shouldn't happen
     if (thisPing < 0)
         thisPing = 0;
@@ -706,7 +728,7 @@ UdpProtocol::OnQualityReply(UdpMsg *msg, int )
     else
         _round_trip_time = (thisPing * emaConstant) + (_round_trip_time * (1 - emaConstant));
  
-
+    _pingCount++;
    return true;
 }
 
@@ -731,6 +753,8 @@ void
 UdpProtocol::GetNetworkStats(struct GGPONetworkStats *s)
 {
    s->network.ping = (int)std::round(_round_trip_time);
+   s->network.remoteping = (int)std::round(_remote_rtt_estimate);
+   s->network.avgping = min(s->network.ping, s->network.remoteping);//(s->network.ping + s->network.remoteping) / 2;
    s->network.send_queue_len = _pending_output.size();
    s->network.kbps_sent = _kbps_sent;
    s->timesync.remote_frames_behind = _timesync.RemoteAdvantage();
@@ -748,7 +772,8 @@ UdpProtocol::SetLocalFrameNumber(int localFrame)
     * trip time.
     */
     // Single trip time is half round trip time (assumption..... ping might not be symmetric)
-    float  singleTripTime = (float)_round_trip_time / 2.0f;
+   // float  singleTripTime = (float)(_round_trip_time+_remote_rtt_estimate) / 4.0f;
+    float  singleTripTime = (float)(min(_round_trip_time,_remote_rtt_estimate)) / 2.0f;
     
     float singleTripTimeInFrames = singleTripTime * _fps / 1000;
    

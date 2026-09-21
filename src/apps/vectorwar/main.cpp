@@ -113,17 +113,22 @@ RunMainLoop(HWND hwnd)
             return;
          }
       }
+      auto frameBudget = dt + extraUS;
+
       auto newTime = lastFrameEndTime;
       auto frameTime = (int)std::chrono::duration_cast<std::chrono::microseconds>(newTime - current).count();
       current = newTime;
       accumulator += frameTime;
-      if (accumulator >= dt * 5)
-          accumulator = dt * 5;
+
+      // Cap the accumulator
+      if (accumulator >= frameBudget * 8)
+          accumulator = frameBudget * 8;
     //  
       int playerNum = localPlayerNumber();
      
-      auto frameBudget = dt + extraUS;
-      while(accumulator>= frameBudget)
+      
+      //int framesRunThisTime = 0;
+      while(accumulator>= frameBudget )
       {  
          VectorWar_RunFrame(hwnd, playerNum,extraUS);
          accumulator -= frameBudget;
@@ -134,7 +139,7 @@ RunMainLoop(HWND hwnd)
      // auto frameTimeLeft = frameBudget - duration_cast<microseconds>(high_resolution_clock::now() - lastFrameEndTime).count();    
      // BusyWait((int)frameTimeLeft);
      
-      Sleep(rand()%20);
+      //Sleep(rand()%20);
       VectorWar_DrawCurrentFrame();
    
       lastFrameEndTime = high_resolution_clock::now();

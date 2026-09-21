@@ -154,6 +154,7 @@ protected:
    bool           _connected=false;
    int            _send_latency;
    int            _oop_percent;
+   int            _pingCount = 0;
    struct {
       int         send_time;
       sockaddr_in dest_addr;
@@ -164,7 +165,8 @@ protected:
    /*
     * Stats
     */
-   double            _round_trip_time = 0;
+   double          _round_trip_time = 0;
+   double          _remote_rtt_estimate = 0;
    int            _packets_sent=0;
    int            _bytes_sent=0;
    int            _kbps_sent=0;
@@ -184,6 +186,7 @@ protected:
       } sync;
       struct {
          uint32   last_quality_report_time;
+         uint32   last_quality_report_recv_time;
          uint32   last_network_stats_interval;
          uint32   last_input_packet_recv_time;
       } running;

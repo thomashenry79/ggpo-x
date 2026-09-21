@@ -311,6 +311,8 @@ typedef struct GGPONetworkStats {
       int   send_queue_len;
       int   recv_queue_len;
       int   ping;
+      int   remoteping;
+      int   avgping;
       int   kbps_sent;
    } network;
    struct {

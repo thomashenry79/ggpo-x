@@ -25,6 +25,7 @@ protected:
    void CreateGDIFont(HDC hdc);
 
    HFONT          _font;
+   HFONT          _Bigfont;
    HWND           _hwnd;
    RECT           _rc;
    HGLRC          _hrc;

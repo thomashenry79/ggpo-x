@@ -40,25 +40,30 @@ public:
 	}
 	void OnGGPOTimeSyncEvent(float framesAhead, int nTimeSyncInterval)
 	{
+		if (framesAhead >= 0)
+		{
+			m_usExtraToWait = 0;
+			return;
+		}/*
 		if (abs(framesAhead) < 0.25f)
 		{
 			m_usExtraToWait = 0;
 			return;
-		}
+		}*/
 
 		
-
+		
 		// This message tells us we are running ahead or behind the opponent, so we should speed up or slow down our loop a bit.
 		// This message comes every nTimeSyncInterval frames. We aim to speed up/slow down 25% of reported difference by the time of the 
 		// next sync message. 33% is chosen in order to avoid overcompensation - the other player will be doing 25% in the opposite direction,
 		// giving 50% overall. So the gap should reduce geometrically, but not overshoot.
-		// We spread the 25% wait/speedup over the next nTimeSyncInterval frames, 
+		// We spread the 25% wait/speedup over the next nTimeSyncInterval frames, 	
 		auto ticksPerFrame = 1000000 / (float)60;
 		float ticksAhead = ticksPerFrame * framesAhead; // could be negative if behind
-		m_usExtraToWait = (int)(ticksAhead / nTimeSyncInterval);
+		m_usExtraToWait = (int)(0.25f * ticksAhead / nTimeSyncInterval);
 
 		// Divive by 3 for reasons described above
-		m_usExtraToWait /= 4;
+	
 	}
 
 	int slowdown() 

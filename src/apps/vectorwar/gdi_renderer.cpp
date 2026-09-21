@@ -34,6 +34,7 @@ GDIRenderer::GDIRenderer(HWND hwnd) :
 GDIRenderer::~GDIRenderer()
 {
    DeleteObject(_font);
+   DeleteObject(_Bigfont);
 }
 
 
@@ -46,6 +47,8 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
    FrameRect(hdc, &gs._bounds, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
    SetBkMode(hdc, TRANSPARENT);
+
+
    SelectObject(hdc, _font);
 
    for (int i = 0; i < gs._num_ships; i++) {
@@ -66,16 +69,16 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
    char statsinfo[128];
    sprintf_s(statsinfo, 
        ARRAYSIZE(statsinfo), 
-       "Input Delay: %d, Local adv: %.1f,remote adv: %.1f", 
+       "Input Delay: %d, Frame advantage Estimates (should be the same ideally....) : %.1f,  : %.1f", 
        ngs.inputDelay,
        ngs.stats.timesync.local_frames_behind,
        ngs.stats.timesync.remote_frames_behind);
    TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 72, statsinfo, (int)strlen(statsinfo));
-   auto estimate = (ngs.stats.timesync.local_frames_behind + ngs.stats.timesync.remote_frames_behind) / 2;
+   auto estimate = std::round((ngs.stats.timesync.local_frames_behind + ngs.stats.timesync.remote_frames_behind) / 2);
    if(estimate <0)
-       sprintf_s(statsinfo,          ARRAYSIZE(statsinfo),           "We think we are %.1f frames ahead, and they are on %d", abs(estimate), ngs.now.framenumber + (int)std::round(estimate));
+       sprintf_s(statsinfo,          ARRAYSIZE(statsinfo),           "We think we are %.1f frames ahead, and they are on %d", abs(estimate), ngs.now.framenumber + (int)(estimate));
    else
-       sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "We think we are %.1f frames behind and they are on %d", abs(estimate), ngs.now.framenumber +(int)std::round(estimate));
+       sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "We think we are %.1f frames behind and they are on %d", abs(estimate), ngs.now.framenumber +(int)(estimate));
    TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 88, statsinfo, (int)strlen(statsinfo));
 
    auto ticksPerFrame = 1000000 / (float)60;
@@ -109,7 +112,7 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
        TextOutA(hdc, _rc.left + 50, _rc.top + 72+(16*i), statsinfo, (int)strlen(statsinfo));
    }
 
-   sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "Network errors: %d ping %d", ngs._networkErrorCount,ngs.stats.network.ping);
+   sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "Network errors: %d localping %d avgping %d", ngs._networkErrorCount,ngs.stats.network.ping, ngs.stats.network.avgping);
    TextOutA(hdc, _rc.left + 50, _rc.top + 350, statsinfo, (int)strlen(statsinfo));
 
    sprintf_s(statsinfo, ARRAYSIZE(statsinfo), "Inputs: current: %d, p1: %d, p2 %d", ngs.currentInput, ngs.p1Input, ngs.p2Input);
@@ -121,6 +124,20 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
        SetTextColor(hdc, RGB(255, 0, 0));
        TextOutA(hdc, (_rc.left + _rc.right) / 2, (_rc.top +_rc.bottom)/2, statsinfo, (int)strlen(statsinfo));
    }
+
+   SelectObject(hdc, _Bigfont);
+   sprintf_s(statsinfo,
+       ARRAYSIZE(statsinfo),
+       "%d",
+       ngs.now.framenumber);
+   
+   TextOutA(hdc, _rc.left +100, (_rc.top + 450), statsinfo,(int)strlen(statsinfo));
+
+   sprintf_s(statsinfo,
+       ARRAYSIZE(statsinfo),
+       "%d",
+       ngs.now.framenumber + int(estimate));
+   TextOutA(hdc, _rc.left + 300, (_rc.top + 450), statsinfo, (int)strlen(statsinfo));
    //SwapBuffers(hdc);
    ReleaseDC(_hwnd, hdc);
 }
@@ -266,5 +283,22 @@ GDIRenderer::CreateGDIFont(HDC)
                       ANTIALIASED_QUALITY,       // Output Quality
                       FF_DONTCARE|DEFAULT_PITCH,	// Family And Pitch
                       L"Tahoma");                // Font Name
+
+   _Bigfont = CreateFont( 
+       72,
+       0,                         // Width Of Font
+       0,                         // AnGDIe Of Escapement
+       0,                         // Orientation AnGDIe
+       0,                         // Font Weight
+       FALSE,                     // Italic
+       FALSE,                     // Underline
+       FALSE,                     // Strikeout
+       ANSI_CHARSET,              // Character Set Identifier
+       OUT_TT_PRECIS,             // Output Precision
+       CLIP_DEFAULT_PRECIS,       // Clipping Precision
+       ANTIALIASED_QUALITY,       // Output Quality
+       FF_DONTCARE | DEFAULT_PITCH,	// Family And Pitch
+       L"Tahoma");                // Font Name
+
 
 }

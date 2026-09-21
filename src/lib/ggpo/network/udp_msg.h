@@ -52,6 +52,7 @@ struct UdpMsg
       struct {
          int8        frame_advantage; /* what's the other guy's frame advantage? */
          uint32      ping;
+         uint32      round_trip_time;
       } quality_report;
       
       struct {

@@ -124,15 +124,21 @@ vw_on_event_callback(void*, GGPOEvent *info)
    case GGPO_EVENTCODE_TIMESYNC:
        
       
-       ngs.loopTimer.OnGGPOTimeSyncEvent(info->u.timesync.frames_ahead,info->u.timesync.timeSyncPeriodInFrames);
+       
+      
 
-       if (abs(info->u.timesync.frames_ahead) > 0.75f) {
+      
+      //if (info->u.timesync.frames_ahead < 0.75f)
+      if (abs(info->u.timesync.frames_ahead) > 0.75f) 
+      {
+          ngs.loopTimer.OnGGPOTimeSyncEvent(info->u.timesync.frames_ahead,info->u.timesync.timeSyncPeriodInFrames);
+
            ngs.nTimeSyncs++;
-       }
-       else
-       {
-           ngs.nonTimeSyncs++;
-       }
+      }
+      else
+      {
+          ngs.nonTimeSyncs++;
+      }
       break;
    }
    return true;
@@ -273,12 +279,12 @@ VectorWar_Init(HWND hwnd, unsigned short localport, int num_players, GGPOPlayer 
    cb.log_game_state  = vw_log_game_state;
    p1IsLocal = players[0].type == GGPO_PLAYERTYPE_LOCAL;
    ngs.LocalPLayerNumber = p1IsLocal ? 1 : 2;
-   ngs.inputDelay = p1IsLocal ? 0 : 8;
+   ngs.inputDelay = p1IsLocal ? 2: 2;
    ngs.loopTimer.m_usPerGameLoop = p1IsLocal ? 1000000 / 60 : 1000000 / 60;
 #if defined(SYNC_TEST)
    result = ggpo_start_synctest(&ggpo, &cb, "vectorwar", num_players, sizeof(int), 1,60.0f);
 #else
-   result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players, sizeof(int), localport, ngs.inputDelay+8,60.0f);
+   result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players, sizeof(int), localport, 8,60.0f);
 #endif
   
   
