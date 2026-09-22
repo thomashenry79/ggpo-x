@@ -28,6 +28,7 @@ public:
 		}
 	}
 	int nCalls;
+	int nSleeep = 0;
 	void Init(unsigned int fps, unsigned int framesToSpreadWait)
 	{
 		m_usPerGameLoop = 1000000 / fps;
@@ -40,6 +41,8 @@ public:
 	}
 	void OnGGPOTimeSyncEvent(float framesAhead, int nTimeSyncInterval)
 	{
+		
+		nTimeSyncInterval;
 	//	if (framesAhead <= 0)
 	//	{
 	//		m_usExtraToWait = 0;
@@ -52,15 +55,20 @@ public:
 //		}*/
 
 		
-		
+		if (framesAhead < 0.0f)
+		{
+			// truncate, tell the loop to skip to catch up
+			m_FramesToJump = (int)(-framesAhead);
+			nSleeep = 1;
+		}
 		// This message tells us we are running ahead or behind the opponent, so we should speed up or slow down our loop a bit.
 		// This message comes every nTimeSyncInterval frames. We aim to speed up/slow down 25% of reported difference by the time of the 
 		// next sync message. 33% is chosen in order to avoid overcompensation - the other player will be doing 25% in the opposite direction,
 		// giving 50% overall. So the gap should reduce geometrically, but not overshoot.
 		// We spread the 25% wait/speedup over the next nTimeSyncInterval frames, 	
-		auto ticksPerFrame = 1000000 / (float)60;
-		float ticksAhead = ticksPerFrame * -framesAhead; // could be negative if behind
-		m_usExtraToWait = (int)(0.33f * ticksAhead / nTimeSyncInterval);
+	//	auto ticksPerFrame = 1000000 / (float)60;
+		//float ticksAhead = ticksPerFrame * framesAhead; // could be negative if behind
+		//m_usExtraToWait = (int)(0.25f * ticksAhead / nTimeSyncInterval);
 
 		// Divive by 3 for reasons described above
 	
@@ -80,6 +88,7 @@ public:
 	int m_framesToSpreadWait;
 	int m_WaitCount = 0;
 	int m_usExtraToWait;
+	int m_FramesToJump = 0;
 private:
 };
 
@@ -161,6 +170,8 @@ struct NonGameState {
    int currentInput = 0;
    int p1Input = 0;
    int p2Input = 0;
+   int totalCalls = 0;
+   int expected = 0;
 
 };
 

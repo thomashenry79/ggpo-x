@@ -7,10 +7,9 @@
 
 #include "timesync.h"
 #include <string>
-TimeSync::TimeSync()
+#include <vector>
+TimeSync::TimeSync() : _local(), _remote()
 {
-   memset(_local, 0, sizeof(_local));
-   memset(_remote, 0, sizeof(_remote));
 }
 
 TimeSync::~TimeSync()
@@ -41,26 +40,36 @@ TimeSync::advance_frame(GameInput &input, float advantage, float radvantage)
        clearedInitial = true;
        nFrame = 0;
    }
+
 }
+
+#include <algorithm>
+template<typename T>
+float median(const T& floatyCollection)
+{
+    std::vector<float> sorted(std::begin(floatyCollection), std::end(floatyCollection));
+    std::sort(sorted.begin(), sorted.end());
+    return sorted[sorted.size() / 2];
+}
+
 float TimeSync::LocalAdvantage() const
 {
-    size_t i ;
-    float advantage=0;
-    for (i = 0; i < ARRAY_SIZE(_local); i++) {
-        advantage += _local[i];
+ /*   float advantage=0;
+    for (auto local : _local) {
+        advantage += local;
     }
-    advantage /=(float)ARRAY_SIZE(_local);
-    return (advantage);
+    advantage /=(float)(_local).size();
+    return (advantage);*/
+    return median(_local);
 }
 
 float TimeSync::RemoteAdvantage() const
 {
-    size_t i;
-    float advantage = 0;;
-    for (i = 0; i < ARRAY_SIZE(_remote); i++) {
-        advantage += _remote[i];
+    float advantage = 0;
+    for (auto local : _remote) {
+        advantage += local;
     }
-    advantage /= (float)ARRAY_SIZE(_remote);
+    advantage /= (float)(_remote).size();
     return (advantage);
 }
 
@@ -72,12 +81,16 @@ TimeSync::recommend_frame_wait_duration(bool )
 
    auto radvantage = RemoteAdvantage();
 
-
+   
+   float sleep_frames = -(((radvantage + advantage) / 2.0f));
+   if (abs(advantage - radvantage) > 1.0f)
+       return 0.0f;
    if (advantage > 0.75f && radvantage > 0.75f)
-       return min(advantage, radvantage);
-   if (advantage <0.75f && radvantage < 0.75f)
-       return max(advantage, radvantage);
+       return sleep_frames;
+   if (advantage < 0.75f && radvantage < 0.75f)
+       return sleep_frames;
    return 0.0f;
+
    // See if someone should take action.  The person furthest ahead
    // needs to slow down so the other user can catch up.
    // Only do this if both clients agree on who's ahead!!

@@ -10,8 +10,8 @@
 
 #include "types.h"
 #include "game_input.h"
-
-#define FRAME_WINDOW_SIZE           120
+#include <array>
+#define FRAME_WINDOW_SIZE           100
 #define MIN_UNIQUE_FRAMES           10
 #define MIN_FRAME_ADVANTAGE          3
 #define MAX_FRAME_ADVANTAGE          30
@@ -31,8 +31,8 @@ public:
    int _frameDelay2 =0;
    int _remoteFrameDelay = 0;;
 protected:
-   float         _local[FRAME_WINDOW_SIZE];
-   float         _remote[1];
+	std::array<float, FRAME_WINDOW_SIZE>         _local;
+	std::array<float, 10>	 _remote;
 
    int nFrame=0;
    float _avgLocal = 0;

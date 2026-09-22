@@ -74,7 +74,9 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
        ngs.stats.timesync.local_frames_behind,
        ngs.stats.timesync.remote_frames_behind);
    TextOutA(hdc, (_rc.left + _rc.right) / 2, _rc.top + 72, statsinfo, (int)strlen(statsinfo));
-   auto estimate = std::round(ngs.stats.timesync.local_frames_behind ); //std::round((ngs.stats.timesync.local_frames_behind + ngs.stats.timesync.remote_frames_behind) / 2);
+  // auto estimate = std::round(ngs.stats.timesync.local_frames_behind ); //std::round((ngs.stats.timesync.local_frames_behind + ngs.stats.timesync.remote_frames_behind) / 2);
+   auto estimate =std::round((ngs.stats.timesync.local_frames_behind + ngs.stats.timesync.remote_frames_behind) / 2);
+
    if(estimate <0)
        sprintf_s(statsinfo,          ARRAYSIZE(statsinfo),           "We think we are %.1f frames ahead, and they are on %d", abs(estimate), ngs.now.framenumber + (int)(estimate));
    else
@@ -144,6 +146,18 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
        "%d",
        ngs.now.framenumber + int(estimate));
    TextOutA(hdc, _rc.left + 400, (_rc.top + 450), statsinfo, (int)strlen(statsinfo));
+   
+   sprintf_s(statsinfo,
+       ARRAYSIZE(statsinfo),
+       "%d",
+       ngs.totalCalls);
+   TextOutA(hdc, _rc.left + 550, (_rc.top + 450), statsinfo, (int)strlen(statsinfo));
+
+   sprintf_s(statsinfo,
+       ARRAYSIZE(statsinfo),
+       "%d",
+       ngs.expected);
+   TextOutA(hdc, _rc.left + 550, (_rc.top + 350), statsinfo, (int)strlen(statsinfo));
    //SwapBuffers(hdc);
    ReleaseDC(_hwnd, hdc);
 }

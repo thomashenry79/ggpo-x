@@ -127,11 +127,16 @@ vw_on_event_callback(void*, GGPOEvent *info)
        
       
 
-      
+       ngs.loopTimer.m_FramesToJump = 0;
+       if (ngs.loopTimer.nSleeep > 0)
+       {
+           ngs.loopTimer.nSleeep--;
+           break;
+       }
       //if (info->u.timesync.frames_ahead < 0.75f)
       if (abs(info->u.timesync.frames_ahead) > 0.75f) 
       {
-      //    ngs.loopTimer.OnGGPOTimeSyncEvent(info->u.timesync.frames_ahead,info->u.timesync.timeSyncPeriodInFrames);
+          ngs.loopTimer.OnGGPOTimeSyncEvent(info->u.timesync.frames_ahead,info->u.timesync.timeSyncPeriodInFrames);
 
            ngs.nTimeSyncs++;
       }
@@ -381,22 +386,23 @@ VectorWar_DisconnectPlayer(int player)
 void
 VectorWar_DrawCurrentFrame()
 {
+    if (renderer != nullptr)
+        renderer->Draw(gs, ngs);
+   // int frameToDraw = ngs.now.framenumber - 0;// ngs.inputDelay;
+   // size_t i = 0;
+   // for (; i < stateHistory.size(); i++)
+   // {
+   //     if (stateHistory[i]._framenumber == frameToDraw)
+   //         break;
+   // }
 
-    int frameToDraw = ngs.now.framenumber - 0;// ngs.inputDelay;
-    size_t i = 0;
-    for (; i < stateHistory.size(); i++)
-    {
-        if (stateHistory[i]._framenumber == frameToDraw)
-            break;
-    }
+   // if (i>= stateHistory.size())
+   //     return;
 
-    if (i>= stateHistory.size())
-        return;
-
-   if (renderer != nullptr) {
-      renderer->Draw(stateHistory[i], ngs);
-   }
-   stateHistory.erase(stateHistory.begin(), stateHistory.begin()+i+1);
+   //if (renderer != nullptr) {
+   //   renderer->Draw(stateHistory[i], ngs);
+   //}
+   //stateHistory.erase(stateHistory.begin(), stateHistory.begin()+i+1);
 }
 
 /*
@@ -491,10 +497,13 @@ int localPlayerNumber()
 {
     return ngs.local_player_handle;
 }
+#pragma warning(disable:4702)
 void
-VectorWar_RunFrame(HWND hwnd, int&playerNum, int & extraUS)
+VectorWar_RunFrame(HWND hwnd, int&playerNum, int*  &extraUS)
 {
-
+    ngs.expected = *extraUS;
+    ngs.totalCalls++;
+   
     ngs.currentInput = 0;
     ngs.p1Input = 0;
     ngs.p2Input = 0;
@@ -551,7 +560,7 @@ VectorWar_RunFrame(HWND hwnd, int&playerNum, int & extraUS)
   //VectorWar_DrawCurrentFrame();
   playerNum = ngs.LocalPLayerNumber;
 
-  extraUS = ngs.loopTimer.slowdown();
+  extraUS = &ngs.loopTimer.m_FramesToJump;
  
   VectorWar_Idle();
   ggpo_get_network_stats(ggpo, ngs.remote_player_handle, &ngs.stats);

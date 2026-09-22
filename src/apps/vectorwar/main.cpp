@@ -96,15 +96,18 @@ void AccurateSleep(int timeToSleep)
         now = high_resolution_clock::now();
     }
 }
+#include <string>
 void
 RunMainLoop(HWND hwnd)
 {
    MSG msg = { 0 };
    auto current = std::chrono::high_resolution_clock::now();
    auto lastFrameEndTime = std::chrono::high_resolution_clock::now();
-   int dt = 1000000 / 60;
+   auto startTime = current;
+  constexpr int fps = 60;
+  constexpr int dt = 1000000 / fps;
   int accumulator = 0;
-  int extraUS = 0;
+ // int extraUS = 0;
    while(1) {
       while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
          TranslateMessage(&msg); 
@@ -113,9 +116,11 @@ RunMainLoop(HWND hwnd)
             return;
          }
       }
-      auto frameBudget = dt + extraUS;
+      auto frameBudget = dt;// +extraUS;
 
       auto newTime = lastFrameEndTime;
+      auto timeSinceStart = std::chrono::duration_cast<std::chrono::microseconds>(newTime - startTime).count();
+      auto nCountExpected = (int)(timeSinceStart / dt);
       auto frameTime = (int)std::chrono::duration_cast<std::chrono::microseconds>(newTime - current).count();
       current = newTime;
       accumulator += frameTime;
@@ -128,19 +133,33 @@ RunMainLoop(HWND hwnd)
      
       
       //int framesRunThisTime = 0;
+      int nFramesRunThisTime = 0;
       while(accumulator>= frameBudget )
-      {  
-         VectorWar_RunFrame(hwnd, playerNum,extraUS);
+      {
+         int* extraFramesToJump=&nCountExpected;
+         VectorWar_RunFrame(hwnd, playerNum, extraFramesToJump);
+         /*if (extraFramesToJump && *extraFramesToJump>0)
+         {
+             std::string msg2 = std::string("need to skip a frame as we are ") + std::to_string(*extraFramesToJump) + std::string(" frames behind");             
+             (*extraFramesToJump)=0;
+             OutputDebugStringA(msg2.c_str());
+             VectorWar_RunFrame(hwnd, playerNum, extraFramesToJump);
+             
+         }*/
+         nFramesRunThisTime++;
          accumulator -= frameBudget;
+        
        //  dt = usToWait;
       }
+      Sleep(1);
       
       
      // auto frameTimeLeft = frameBudget - duration_cast<microseconds>(high_resolution_clock::now() - lastFrameEndTime).count();    
      // BusyWait((int)frameTimeLeft);
      
-      //Sleep(rand()%20);
-      VectorWar_DrawCurrentFrame();
+     
+      if(nFramesRunThisTime)
+        VectorWar_DrawCurrentFrame();
    
       lastFrameEndTime = high_resolution_clock::now();
 

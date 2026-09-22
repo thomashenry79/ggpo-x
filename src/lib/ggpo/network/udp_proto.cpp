@@ -210,7 +210,7 @@ UdpProtocol::OnLoopPoll()
    PumpSendQueue();
    switch (_current_state) {
    case Syncing:
-      next_interval = (_state.sync.roundtrips_remaining == NUM_SYNC_PACKETS) ? SYNC_FIRST_RETRY_INTERVAL : SYNC_RETRY_INTERVAL;
+       next_interval =  (_state.sync.roundtrips_remaining == NUM_SYNC_PACKETS) ? SYNC_FIRST_RETRY_INTERVAL : SYNC_RETRY_INTERVAL;
       if (_last_send_time && _last_send_time + next_interval < now) {
          Log("No luck syncing after %d ms... Re-queueing sync packet.\n", next_interval);
          SendSyncRequest();
@@ -704,7 +704,7 @@ UdpProtocol::OnQualityReport(UdpMsg *msg, int )
 bool
 UdpProtocol::OnQualityReply(UdpMsg *msg, int )
 {
-    constexpr int emaPeriodMS =15000;
+    constexpr int emaPeriodMS =4000;
     constexpr int pingPeriodMS = QUALITY_REPORT_INTERVAL;
     constexpr int nSamples = emaPeriodMS / pingPeriodMS;
     constexpr  double emaConstant = 2 / (1.0 + nSamples);
