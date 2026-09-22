@@ -320,6 +320,7 @@ typedef struct GGPONetworkStats {
       float   remote_frames_behind;
       float   avg_local_frames_behind;
       float   avg_remote_frames_behind;
+      int  _last_received_input_frame;
    } timesync;
 } GGPONetworkStats;
 

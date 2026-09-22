@@ -32,7 +32,8 @@ public:
    int _remoteFrameDelay = 0;;
 protected:
    float         _local[FRAME_WINDOW_SIZE];
-   float         _remote[FRAME_WINDOW_SIZE];
+   float         _remote[1];
+
    int nFrame=0;
    float _avgLocal = 0;
    float _avgRemote = 0;

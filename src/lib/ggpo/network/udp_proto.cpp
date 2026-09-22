@@ -704,30 +704,30 @@ UdpProtocol::OnQualityReport(UdpMsg *msg, int )
 bool
 UdpProtocol::OnQualityReply(UdpMsg *msg, int )
 {
-    constexpr int emaPeriodMS = 5000;
+    constexpr int emaPeriodMS =15000;
     constexpr int pingPeriodMS = QUALITY_REPORT_INTERVAL;
     constexpr int nSamples = emaPeriodMS / pingPeriodMS;
     constexpr  double emaConstant = 2 / (1.0 + nSamples);
-    double frameTime = 1000.0 / _fps;
+   // double frameTime = 1000.0 / _fps;
   
     double thisPing = (Platform::GetCurrentTimeMS() - msg->u.quality_reply.pong);
-    thisPing -= frameTime; // on average... it will take tme half a frame to see out ping and us half a frame to see their ping;
-    
-    //// ignore large spikes that are probably network interruptions
-    //if (_pingCount > 10 && thisPing > _round_trip_time * 3)
-    //{
-    //    OutputDebugStringA("Ignore big ping\n");
-    //    return true;
-    //}
-    // Shouldn't happen
-    if (thisPing < 0)
-        thisPing = 0;
+    //thisPing -= frameTime/2; // on average... it will take tme half a frame to see out ping and us half a frame to see their ping;
+    //
+    ////// ignore large spikes that are probably network interruptions
+    ////if (_pingCount > 10 && thisPing > _round_trip_time * 3)
+    ////{
+    ////    OutputDebugStringA("Ignore big ping\n");
+    ////    return true;
+    ////}
+    //// Shouldn't happen
+    //if (thisPing < 0)
+    //    thisPing = 0;
 
     if (_round_trip_time == 0)
         _round_trip_time = thisPing;
     else
         _round_trip_time = (thisPing * emaConstant) + (_round_trip_time * (1 - emaConstant));
- 
+    //_round_trip_time = thisPing;
     _pingCount++;
    return true;
 }
@@ -761,6 +761,7 @@ UdpProtocol::GetNetworkStats(struct GGPONetworkStats *s)
    s->timesync.local_frames_behind = _timesync.LocalAdvantage();
    s->timesync.avg_local_frames_behind = _timesync.AvgLocalAdvantageSinceStart();
    s->timesync.avg_remote_frames_behind = _timesync.AvgRemoteAdvantageSinceStart();
+   s->timesync._last_received_input_frame = _last_received_input.frame;
 }
 
 void
@@ -772,8 +773,8 @@ UdpProtocol::SetLocalFrameNumber(int localFrame)
     * trip time.
     */
     // Single trip time is half round trip time (assumption..... ping might not be symmetric)
-   // float  singleTripTime = (float)(_round_trip_time+_remote_rtt_estimate) / 4.0f;
-    float  singleTripTime = (float)(min(_round_trip_time,_remote_rtt_estimate)) / 2.0f;
+    float  singleTripTime = (float)(_round_trip_time+_remote_rtt_estimate) / 4.0f;
+   // float  singleTripTime = (float)(min(_round_trip_time,_remote_rtt_estimate)) / 2.0f;
     
     float singleTripTimeInFrames = singleTripTime * _fps / 1000;
    
@@ -781,7 +782,7 @@ UdpProtocol::SetLocalFrameNumber(int localFrame)
     // frames a single trip would take, plus half a frame (as on average, the message will 
     // come into us halfway through one of our frames, so will be half a frame old by the time 
     // we process it
-    float remoteFrameEstimate = _last_received_input.frame + singleTripTimeInFrames + 1.0f;
+    float remoteFrameEstimate = _last_received_input.frame == -1 ? 0 : _last_received_input.frame + singleTripTimeInFrames*2;// +0.5f;
 
    /*
     * Our frame advantage is how many frames *behind* the other guy
@@ -790,6 +791,8 @@ UdpProtocol::SetLocalFrameNumber(int localFrame)
     * pop more frequenetly.
     */
     _local_frame_advantage = (remoteFrameEstimate - (float)localFrame);
+    if (_last_received_input.frame == -1)
+        _remote_frame_advantage = _local_frame_advantage;
 }
 
 float

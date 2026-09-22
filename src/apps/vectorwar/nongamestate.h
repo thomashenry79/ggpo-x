@@ -40,16 +40,16 @@ public:
 	}
 	void OnGGPOTimeSyncEvent(float framesAhead, int nTimeSyncInterval)
 	{
-		if (framesAhead >= 0)
-		{
-			m_usExtraToWait = 0;
-			return;
-		}/*
-		if (abs(framesAhead) < 0.25f)
-		{
-			m_usExtraToWait = 0;
-			return;
-		}*/
+	//	if (framesAhead <= 0)
+	//	{
+	//		m_usExtraToWait = 0;
+	//		return;
+	//	}/*
+//		if (abs(framesAhead) < 0.25f)
+//		{
+//			m_usExtraToWait = 0;
+//			return;
+//		}*/
 
 		
 		
@@ -59,8 +59,8 @@ public:
 		// giving 50% overall. So the gap should reduce geometrically, but not overshoot.
 		// We spread the 25% wait/speedup over the next nTimeSyncInterval frames, 	
 		auto ticksPerFrame = 1000000 / (float)60;
-		float ticksAhead = ticksPerFrame * framesAhead; // could be negative if behind
-		m_usExtraToWait = (int)(0.25f * ticksAhead / nTimeSyncInterval);
+		float ticksAhead = ticksPerFrame * -framesAhead; // could be negative if behind
+		m_usExtraToWait = (int)(0.33f * ticksAhead / nTimeSyncInterval);
 
 		// Divive by 3 for reasons described above
 	

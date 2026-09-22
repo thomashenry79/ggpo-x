@@ -57,12 +57,13 @@ float TimeSync::RemoteAdvantage() const
 {
     size_t i;
     float advantage = 0;;
-    for (i = 0; i < ARRAY_SIZE(_local); i++) {
+    for (i = 0; i < ARRAY_SIZE(_remote); i++) {
         advantage += _remote[i];
     }
-    advantage /= (float)ARRAY_SIZE(_local);
+    advantage /= (float)ARRAY_SIZE(_remote);
     return (advantage);
 }
+
 float
 TimeSync::recommend_frame_wait_duration(bool )
 {
@@ -72,6 +73,11 @@ TimeSync::recommend_frame_wait_duration(bool )
    auto radvantage = RemoteAdvantage();
 
 
+   if (advantage > 0.75f && radvantage > 0.75f)
+       return min(advantage, radvantage);
+   if (advantage <0.75f && radvantage < 0.75f)
+       return max(advantage, radvantage);
+   return 0.0f;
    // See if someone should take action.  The person furthest ahead
    // needs to slow down so the other user can catch up.
    // Only do this if both clients agree on who's ahead!!
@@ -81,8 +87,8 @@ TimeSync::recommend_frame_wait_duration(bool )
       
    //   return 0;
   // }
-   float sleep_frames = -(((radvantage + advantage) / 2.0f));
+  // float sleep_frames = -(((radvantage + advantage) / 2.0f));
 
 
-   return sleep_frames > 0  ? (float)MIN(sleep_frames, MAX_FRAME_ADVANTAGE) : (float)MAX(sleep_frames, -MAX_FRAME_ADVANTAGE);
+//return sleep_frames > 0  ? (float)MIN(sleep_frames, MAX_FRAME_ADVANTAGE) : (float)MAX(sleep_frames, -MAX_FRAME_ADVANTAGE);
 }

@@ -131,7 +131,7 @@ vw_on_event_callback(void*, GGPOEvent *info)
       //if (info->u.timesync.frames_ahead < 0.75f)
       if (abs(info->u.timesync.frames_ahead) > 0.75f) 
       {
-          ngs.loopTimer.OnGGPOTimeSyncEvent(info->u.timesync.frames_ahead,info->u.timesync.timeSyncPeriodInFrames);
+      //    ngs.loopTimer.OnGGPOTimeSyncEvent(info->u.timesync.frames_ahead,info->u.timesync.timeSyncPeriodInFrames);
 
            ngs.nTimeSyncs++;
       }
