@@ -141,11 +141,11 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
        ngs.stats.timesync._last_received_input_frame);
    TextOutA(hdc, _rc.left + 250, (_rc.top + 350), statsinfo, (int)strlen(statsinfo));
 
-   sprintf_s(statsinfo,
+  /* sprintf_s(statsinfo,
        ARRAYSIZE(statsinfo),
        "%.1f",
        ngs.stats.timesync._simple_remote_frame_estimate);
-   TextOutA(hdc, _rc.left + 250, (_rc.top + 450), statsinfo, (int)strlen(statsinfo));
+   TextOutA(hdc, _rc.left + 250, (_rc.top + 450), statsinfo, (int)strlen(statsinfo));*/
 
    sprintf_s(statsinfo,
        ARRAYSIZE(statsinfo),
@@ -153,17 +153,17 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
        ngs.now.framenumber + int(estimate));
    TextOutA(hdc, _rc.left + 400, (_rc.top + 450), statsinfo, (int)strlen(statsinfo));
    
-   sprintf_s(statsinfo,
-       ARRAYSIZE(statsinfo),
-       "%d",
-       ngs.totalCalls);
-   TextOutA(hdc, _rc.left + 550, (_rc.top + 450), statsinfo, (int)strlen(statsinfo));
+   //sprintf_s(statsinfo,
+   //    ARRAYSIZE(statsinfo),
+   //    "%d",
+   //    ngs.totalCalls);
+   //TextOutA(hdc, _rc.left + 550, (_rc.top + 450), statsinfo, (int)strlen(statsinfo));
 
-   sprintf_s(statsinfo,
-       ARRAYSIZE(statsinfo),
-       "%d",
-       ngs.expected);
-   TextOutA(hdc, _rc.left + 550, (_rc.top + 350), statsinfo, (int)strlen(statsinfo));
+   //sprintf_s(statsinfo,
+   //    ARRAYSIZE(statsinfo),
+   //    "%d",
+   //    ngs.expected);
+   //TextOutA(hdc, _rc.left + 550, (_rc.top + 350), statsinfo, (int)strlen(statsinfo));
    //SwapBuffers(hdc);
    ReleaseDC(_hwnd, hdc);
 }
