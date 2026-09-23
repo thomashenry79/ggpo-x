@@ -762,6 +762,8 @@ UdpProtocol::GetNetworkStats(struct GGPONetworkStats *s)
    s->timesync.avg_local_frames_behind = _timesync.AvgLocalAdvantageSinceStart();
    s->timesync.avg_remote_frames_behind = _timesync.AvgRemoteAdvantageSinceStart();
    s->timesync._last_received_input_frame = _last_received_input.frame;
+   s->timesync._simple_remote_frame_estimate = _simple_remote_frame_estimate;
+
 }
 
 void
@@ -782,7 +784,7 @@ UdpProtocol::SetLocalFrameNumber(int localFrame)
     // frames a single trip would take, plus half a frame (as on average, the message will 
     // come into us halfway through one of our frames, so will be half a frame old by the time 
     // we process it
-    float remoteFrameEstimate = _last_received_input.frame == -1 ? 0 : _last_received_input.frame + singleTripTimeInFrames*2;// +0.5f;
+    _simple_remote_frame_estimate = _last_received_input.frame == -1 ? 0 : _last_received_input.frame + singleTripTimeInFrames +0.5f;
 
    /*
     * Our frame advantage is how many frames *behind* the other guy
@@ -790,7 +792,7 @@ UdpProtocol::SetLocalFrameNumber(int localFrame)
     * it means they'll have to predict more often and our moves will
     * pop more frequenetly.
     */
-    _local_frame_advantage = (remoteFrameEstimate - (float)localFrame);
+    _local_frame_advantage = (_simple_remote_frame_estimate - (float)localFrame);
     if (_last_received_input.frame == -1)
         _remote_frame_advantage = _local_frame_advantage;
 }

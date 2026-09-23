@@ -137,8 +137,14 @@ GDIRenderer::Draw(GameState &gs, NonGameState &ngs)
    
    sprintf_s(statsinfo,
        ARRAYSIZE(statsinfo),
-       "%d",
-       ngs.now.framenumber-ngs.stats.timesync._last_received_input_frame);
+       "%df",
+       ngs.stats.timesync._last_received_input_frame);
+   TextOutA(hdc, _rc.left + 250, (_rc.top + 350), statsinfo, (int)strlen(statsinfo));
+
+   sprintf_s(statsinfo,
+       ARRAYSIZE(statsinfo),
+       "%.1f",
+       ngs.stats.timesync._simple_remote_frame_estimate);
    TextOutA(hdc, _rc.left + 250, (_rc.top + 450), statsinfo, (int)strlen(statsinfo));
 
    sprintf_s(statsinfo,

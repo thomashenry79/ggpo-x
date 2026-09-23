@@ -197,7 +197,7 @@ protected:
     */
    float               _local_frame_advantage=0;
    float               _remote_frame_advantage=0;
-  
+   float               _simple_remote_frame_estimate = 0;
    float _fps;
    /*
     * Packet loss...

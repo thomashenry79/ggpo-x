@@ -22,7 +22,7 @@ void TimeSync::SetFrameDelay(int frame)
 void
 TimeSync::advance_frame(GameInput &input, float advantage, float radvantage)
 {
-    advantage -= _remoteFrameDelay;
+   // advantage -= _remoteFrameDelay;
     radvantage *= -1;
    // Remember the last frame and frame advantage
     _local[input.frame % ARRAY_SIZE(_local)] = advantage;
@@ -54,7 +54,7 @@ float median(const T& floatyCollection)
 
 float TimeSync::LocalAdvantage() const
 {
- /*   float advantage=0;
+   /* float advantage=0;
     for (auto local : _local) {
         advantage += local;
     }
