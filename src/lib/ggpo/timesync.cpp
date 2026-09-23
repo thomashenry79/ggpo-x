@@ -22,7 +22,7 @@ void TimeSync::SetFrameDelay(int frame)
 void
 TimeSync::advance_frame(GameInput &input, float advantage, float radvantage)
 {
-   // advantage -= _remoteFrameDelay;
+    advantage -= _remoteFrameDelay;
     radvantage *= -1;
    // Remember the last frame and frame advantage
     _local[input.frame % ARRAY_SIZE(_local)] = advantage;
@@ -83,13 +83,14 @@ TimeSync::recommend_frame_wait_duration(bool )
 
    
    float sleep_frames = -(((radvantage + advantage) / 2.0f));
-   if (abs(advantage - radvantage) > 1.0f)
+   return sleep_frames;
+   /*  if (abs(advantage - radvantage) > 1.0f)
        return 0.0f;
    if (advantage > 0.75f && radvantage > 0.75f)
        return sleep_frames;
    if (advantage < 0.75f && radvantage < 0.75f)
        return sleep_frames;
-   return 0.0f;
+   return 0.0f;*/
 
    // See if someone should take action.  The person furthest ahead
    // needs to slow down so the other user can catch up.

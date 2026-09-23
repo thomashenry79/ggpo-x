@@ -6,7 +6,13 @@
 #include "gdi_renderer.h"
 #include "vectorwar.h"
 #include "ggpo_perfmon.h"
-
+#include <sstream>
+#include <chrono>
+#include <cstddef>
+#include <iomanip>
+#include <iostream>
+#include <numeric>
+#include <vector>
 //#define SYNC_TEST    // test: turn on synctest
 #define MAX_PLAYERS     64
 
@@ -134,7 +140,7 @@ vw_on_event_callback(void*, GGPOEvent *info)
            break;
        }
       //if (info->u.timesync.frames_ahead < 0.75f)
-      if (abs(info->u.timesync.frames_ahead) > 0.75f) 
+      if (abs(info->u.timesync.frames_ahead) > 0.66f) 
       {
           ngs.loopTimer.OnGGPOTimeSyncEvent(info->u.timesync.frames_ahead,info->u.timesync.timeSyncPeriodInFrames);
 
@@ -284,7 +290,7 @@ VectorWar_Init(HWND hwnd, unsigned short localport, int num_players, GGPOPlayer 
    cb.log_game_state  = vw_log_game_state;
    p1IsLocal = players[0].type == GGPO_PLAYERTYPE_LOCAL;
    ngs.LocalPLayerNumber = p1IsLocal ? 1 : 2;
-   ngs.inputDelay = p1IsLocal ? 0 : 0;
+   ngs.inputDelay = p1IsLocal ? 3 : 3;
    ngs.loopTimer.m_usPerGameLoop = p1IsLocal ? 1000000 / 60 : 1000000 / 60;
 #if defined(SYNC_TEST)
    result = ggpo_start_synctest(&ggpo, &cb, "vectorwar", num_players, sizeof(int), 1,60.0f);
@@ -498,6 +504,28 @@ int localPlayerNumber()
     return ngs.local_player_handle;
 }
 #pragma warning(disable:4702)
+#pragma warning(disable:4996)
+
+
+using Clock = std::chrono::high_resolution_clock;
+static std::string timePointToString(const Clock::time_point& tp, const std::string& format, bool withMs = true, bool utc = true)
+{
+    const Clock::time_point::duration tt = tp.time_since_epoch();
+    const time_t durS = std::chrono::duration_cast<std::chrono::seconds>(tt).count();
+    std::ostringstream ss;
+    if (const std::tm* tm = (utc ? gmtime(&durS) : std::localtime(&durS))) {
+        ss << std::put_time(tm, format.c_str());
+        if (withMs) {
+            const long long durMs = std::chrono::duration_cast<std::chrono::milliseconds>(tt).count();
+            ss << std::setw(3) << std::setfill('0') << int(durMs - durS * 1000);
+        }
+    }
+    // gmtime/localtime() returned null
+    else {
+        ss << "<FORMAT ERROR>";
+    }
+    return ss.str();
+}
 void
 VectorWar_RunFrame(HWND hwnd, int&playerNum, int*  &extraUS)
 {
@@ -510,7 +538,7 @@ VectorWar_RunFrame(HWND hwnd, int&playerNum, int*  &extraUS)
     // Rest these counts after 3 seconds as they take a hit right at the start while the connection stabilises.
     if (ngs.now.framenumber == 240)
     {
-        ngs.nRollbacks = 0;
+      //  ngs.nRollbacks = 0;
         ngs.inputDelays = 0;
         ngs.nTimeSyncs = 0;
         ngs.nonTimeSyncs = 0;
@@ -524,9 +552,9 @@ VectorWar_RunFrame(HWND hwnd, int&playerNum, int*  &extraUS)
   bool needIdle = true;
   if (ngs.local_player_handle != GGPO_INVALID_HANDLE) {
       static int nc = 0;
-      int input = ReadInputs(hwnd);
-      //int input = nc++ % 2 == 0 ? INPUT_ROTATE_LEFT : INPUT_ROTATE_RIGHT;
-      ////  int input = ReadInputs(hwnd);
+      //int input = ReadInputs(hwnd);
+      int input = nc++ % 2 == 0 ? INPUT_ROTATE_LEFT : INPUT_ROTATE_RIGHT;
+      //  int input = ReadInputs(hwnd);
       //if (input == INPUT_FIRE)
       //    ggpo_client_chat(ggpo, "You wanker!");
 #if defined(SYNC_TEST)
@@ -549,12 +577,20 @@ VectorWar_RunFrame(HWND hwnd, int&playerNum, int*  &extraUS)
          ngs.p1Input = inputs[0];
          ngs.p2Input = inputs[1];
          VectorWar_AdvanceFrame(inputs, disconnect_flags);
+         if (ngs.now.framenumber % 50 == 0)
+         {
+             std::stringstream ss;
+             auto now = std::chrono::high_resolution_clock::now();
+             ss << std::fixed << std::setprecision(9) << std::left << "Frame " << ngs.now.framenumber << "\ttime:" << timePointToString(now, "%Z %Y-%m-%d %H:%M:%S.");
+             OutputDebugStringA(ss.str().c_str());
+         }
          needIdle = false;
      }
   }
   else
   {
-      ngs.inputDelays++;
+      if(ngs.now.framenumber>1)
+        ngs.inputDelays++;
   }
 
   //VectorWar_DrawCurrentFrame();

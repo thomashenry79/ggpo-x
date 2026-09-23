@@ -138,28 +138,29 @@ RunMainLoop(HWND hwnd)
       {
          int* extraFramesToJump=&nCountExpected;
          VectorWar_RunFrame(hwnd, playerNum, extraFramesToJump);
-         /*if (extraFramesToJump && *extraFramesToJump>0)
+         if (extraFramesToJump && *extraFramesToJump>0)
          {
              std::string msg2 = std::string("need to skip a frame as we are ") + std::to_string(*extraFramesToJump) + std::string(" frames behind");             
-             (*extraFramesToJump)=0;
+             (*extraFramesToJump)--;
              OutputDebugStringA(msg2.c_str());
              VectorWar_RunFrame(hwnd, playerNum, extraFramesToJump);
              
-         }*/
+         }
          nFramesRunThisTime++;
          accumulator -= frameBudget;
         
        //  dt = usToWait;
       }
-      Sleep(1);
+      //Sleep(1);
       
       
-     // auto frameTimeLeft = frameBudget - duration_cast<microseconds>(high_resolution_clock::now() - lastFrameEndTime).count();    
-     // BusyWait((int)frameTimeLeft);
+     
      
      
       if(nFramesRunThisTime)
         VectorWar_DrawCurrentFrame();
+      auto frameTimeLeft = frameBudget - duration_cast<microseconds>(high_resolution_clock::now() - lastFrameEndTime).count();    
+      AccurateSleep((int)frameTimeLeft);
    
       lastFrameEndTime = high_resolution_clock::now();
 

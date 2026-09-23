@@ -697,7 +697,6 @@ UdpProtocol::OnQualityReport(UdpMsg *msg, int )
    _remote_frame_advantage = (float)(msg->u.quality_report.frame_advantage/10.f);
    _state.running.last_quality_report_recv_time = Platform::GetCurrentTimeMS();
    _remote_rtt_estimate = msg->u.quality_report.round_trip_time;
-   OutputDebugStringA("Received quality report\n");
    return true;
 }
 

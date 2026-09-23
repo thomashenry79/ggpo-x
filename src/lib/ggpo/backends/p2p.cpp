@@ -7,7 +7,7 @@
 
 #include "p2p.h"
 
-static const int RECOMMENDATION_INTERVAL           = 100;
+static const int RECOMMENDATION_INTERVAL           = 50;
 static const int DEFAULT_DISCONNECT_TIMEOUT        = 5000;
 static const int DEFAULT_DISCONNECT_NOTIFY_START   = 750;
 

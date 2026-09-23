@@ -5,6 +5,7 @@
 #define MAX_PLAYERS     64
 #include <array>
 #include <chrono>
+#include <cmath>
 /*
  * nongamestate.h --
  *
@@ -58,7 +59,7 @@ public:
 		if (framesAhead < 0.0f)
 		{
 			// truncate, tell the loop to skip to catch up
-			m_FramesToJump = (int)(-framesAhead);
+			m_FramesToJump = (int)(std::round(-framesAhead));
 			nSleeep = 1;
 		}
 		// This message tells us we are running ahead or behind the opponent, so we should speed up or slow down our loop a bit.
